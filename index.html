@@ -14,7 +14,18 @@
     </style>
 </head>
 <body class="p-4 md:p-8">
-    <div class="max-w-7xl mx-auto">
+    <!-- Password Overlay -->
+    <div id="loginOverlay" class="fixed inset-0 bg-slate-900 z-[100] flex items-center justify-center p-4">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-sm text-center">
+            <div class="text-4xl mb-4">🔐</div>
+            <h2 class="text-xl font-bold text-slate-800 mb-6">النظام المالي الخاص</h2>
+            <input type="password" id="passInput" placeholder="أدخل الرقم السري" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-3 text-center text-2xl tracking-widest focus:ring-2 focus:ring-blue-500 outline-none mb-4">
+            <button onclick="checkPass()" class="w-full bg-slate-800 text-white font-bold py-3 rounded-xl hover:bg-slate-700 transition-all">دخول</button>
+            <p id="errorMsg" class="text-red-500 text-sm mt-4 hidden">الرقم السري غير صحيح</p>
+        </div>
+    </div>
+
+    <div id="mainContent" class="max-w-7xl mx-auto hidden">
         <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
             <div>
                 <h1 class="text-3xl font-bold text-slate-800">النظام المالي - عبدالله السنعوسي</h1>
@@ -269,6 +280,27 @@
         document.getElementById('filterStatus').addEventListener('change', applyFilters);
         document.getElementById('dateFrom').addEventListener('change', applyFilters);
         document.getElementById('dateTo').addEventListener('change', applyFilters);
+
+        function checkPass() {
+            const input = document.getElementById('passInput').value;
+            const overlay = document.getElementById('loginOverlay');
+            const content = document.getElementById('mainContent');
+            const error = document.getElementById('errorMsg');
+            
+            if (input === '0600') {
+                overlay.classList.add('hidden');
+                content.classList.remove('hidden');
+                localStorage.setItem('auth_sn3s', 'true');
+            } else {
+                error.classList.remove('hidden');
+            }
+        }
+
+        // Auto-login if already entered
+        if (localStorage.getItem('auth_sn3s') === 'true') {
+            document.getElementById('loginOverlay').classList.add('hidden');
+            document.getElementById('mainContent').classList.remove('hidden');
+        }
 
         // Init Chart
         const ctx = document.getElementById('growthChart').getContext('2d');
