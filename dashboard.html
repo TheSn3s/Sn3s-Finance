@@ -1,0 +1,307 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sn3s Financial Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Tajawal', sans-serif; background-color: #f1f5f9; }
+        .filter-input { @apply bg-white border border-slate-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500; }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        <header class="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-800">النظام المالي - عبدالله السنعوسي</h1>
+                <p class="text-slate-500">متابعة الفواتير، الإيرادات، والمبالغ المعلقة</p>
+            </div>
+            <div class="bg-white px-4 py-2 rounded-lg shadow-sm text-sm text-slate-600 border border-slate-200">
+                📅 تحديث: 2026-03-30 18:25
+            </div>
+        </header>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="p-2 bg-blue-50 text-blue-600 rounded-lg text-xl">💰</span>
+                    <span class="text-slate-500 font-bold">إجمالي الدخل</span>
+                </div>
+                <div class="text-3xl font-black text-slate-800">119,919 <span class="text-lg">د.ك</span></div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="p-2 bg-green-50 text-green-600 rounded-lg text-xl">📈</span>
+                    <span class="text-slate-500 font-bold">دخل 2026</span>
+                </div>
+                <div class="text-3xl font-black text-slate-800">4,800 <span class="text-lg">د.ك</span></div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-red-100">
+                <div class="flex items-center gap-3 mb-2">
+                    <span class="p-2 bg-red-50 text-red-600 rounded-lg text-xl">🚩</span>
+                    <span class="text-slate-500 font-bold">مبالغ معلقة</span>
+                </div>
+                <div class="text-3xl font-black text-red-600">8,350 <span class="text-lg">د.ك</span></div>
+            </div>
+        </div>
+
+        <!-- Chart -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 mb-8">
+            <h2 class="text-lg font-bold mb-6 text-slate-800">تحليل الإيرادات الشهرية</h2>
+            <div class="h-[300px]">
+                <canvas id="growthChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Search & Filter -->
+        <div class="bg-white p-6 rounded-t-2xl shadow-sm border border-slate-200 border-b-0">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-bold text-slate-800">تصفية وفلترة العمليات</h2>
+                <button onclick="openModal('add')" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-md shadow-blue-100 flex items-center gap-2">
+                    <span>➕</span> إضافة مشروع جديد
+                </button>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <input type="text" id="searchClient" placeholder="بحث بالعميل أو المشروع..." class="bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <div class="flex gap-2">
+                    <input type="date" id="dateFrom" class="bg-slate-50 border border-slate-200 rounded-lg px-2 py-2 text-sm w-full">
+                    <input type="date" id="dateTo" class="bg-slate-50 border border-slate-200 rounded-lg px-2 py-2 text-sm w-full">
+                </div>
+                <select id="filterStatus" class="bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm">
+                    <option value="all">كل الحالات</option>
+                    <option value="Paid">مدفوع</option>
+                    <option value="Not Paid">معلق</option>
+                </select>
+                <div class="flex items-center gap-2 text-slate-500 text-sm">
+                    عدد النتائج: <span id="resultCount" class="font-bold text-blue-600">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Full Ledger Table -->
+        <div class="bg-white rounded-b-2xl shadow-sm border border-slate-200 overflow-hidden mb-12">
+            <div class="overflow-x-auto">
+                <table class="w-full text-right border-collapse">
+                    <thead class="bg-slate-50 text-slate-500 text-xs uppercase font-bold border-b border-slate-200">
+                        <tr>
+                            <th class="p-4">#</th>
+                            <th class="p-4">التاريخ</th>
+                            <th class="p-4">العميل</th>
+                            <th class="p-4">المشروع</th>
+                            <th class="p-4">المبلغ</th>
+                            <th class="p-4">الحالة</th>
+                            <th class="p-4">إجراء</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ledgerBody" class="text-slate-700 text-sm">
+                        <!-- JS handles content -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+            <div class="p-6 border-b border-slate-100 flex justify-between items-center">
+                <h3 id="modalTitle" class="text-xl font-bold text-slate-800">إضافة مشروع جديد</h3>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-2xl">&times;</button>
+            </div>
+            <form id="projectForm" class="p-6 space-y-4">
+                <input type="hidden" id="editSerial">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">التاريخ</label>
+                    <input type="date" id="fDate" required class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">العميل</label>
+                    <input type="text" id="fClient" required placeholder="اسم العميل..." class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">المشروع</label>
+                    <input type="text" id="fProject" required placeholder="وصف المشروع..." class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">المبلغ (د.ك)</label>
+                        <input type="number" id="fAmount" required step="0.5" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1 uppercase">حالة الدفع</label>
+                        <select id="fPaymentStatus" class="w-full bg-slate-50 border border-slate-200 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                            <option value="Paid">مدفوع ✅</option>
+                            <option value="Not Paid">معلق 🚩</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-xl shadow-lg shadow-blue-100 transition-all mt-4">حفظ البيانات</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const rawData = [{"Date": "2020-09-04", "Category": "2D", "Client": "Safari Media", "Project": "Abdulrahman Almutawa", "Status": "Delivered", "Amount": "150.0", "PaymentStatus": "Paid", "Notes": "001"}, {"Date": "2020-09-08", "Category": "2D", "Client": "Safari Media", "Project": "Dlehi", "Status": "Delivered", "Amount": "120.0", "PaymentStatus": "Paid", "Notes": "002"}, {"Date": "2020-09-17", "Category": "3D", "Client": "V-Thru", "Project": "Slider Station", "Status": "Delivered", "Amount": "250.0", "PaymentStatus": "Paid", "Notes": "003"}, {"Date": "2020-09-17", "Category": "2D", "Client": "Classatk", "Project": "Logo Animation", "Status": "Delivered", "Amount": "120.0", "PaymentStatus": "Paid", "Notes": "004"}, {"Date": "2020-09-20", "Category": "2D", "Client": "Layers Media", "Project": "Babtain", "Status": "Delivered", "Amount": "600.0", "PaymentStatus": "Paid", "Notes": "005"}, {"Date": "2020-09-20", "Category": "3D", "Client": "NBK", "Project": "Camel Boursa", "Status": "Delivered", "Amount": "350.0", "PaymentStatus": "Paid", "Notes": "006"}, {"Date": "2020-09-24", "Category": "3D", "Client": "Dawi", "Project": "Asnan Tower", "Status": "Delivered", "Amount": "600.0", "PaymentStatus": "Paid", "Notes": "007"}, {"Date": "2020-09-24", "Category": "2D", "Client": "Safari Media", "Project": "Sasora", "Status": "Delivered", "Amount": "150.0", "PaymentStatus": "Paid", "Notes": "008"}, {"Date": "28/9/2020", "Category": "2D", "Client": "NBK", "Project": "Sitting Posture", "Status": "Delivered", "Amount": "450.0", "PaymentStatus": "Paid", "Notes": "009"}, {"Date": "2020-10-14", "Category": "2D", "Client": "BUSTOP", "Project": "Bobyan - Velar", "Status": "Delivered", "Amount": "300.0", "PaymentStatus": "Paid", "Notes": "010"}, {"Date": "2020-10-15", "Category": "2D", "Client": "BUSTOP", "Project": "Bobyan - Prime Winners", "Status": "Delivered", "Amount": "300.0", "PaymentStatus": "Paid", "Notes": "011"}, {"Date": "2020-10-22", "Category": "2D", "Client": "BUSTOP", "Project": "Bobyan - Fitbit", "Status": "Delivered", "Amount": "-", "PaymentStatus": "Paid", "Notes": "012"}, {"Date": "2020-10-27", "Category": "2D", "Client": "Safari Media", "Project": "KOC Outro", "Status": "Delivered", "Amount": "150.0", "PaymentStatus": "Paid", "Notes": "013"}, {"Date": "2020-10-29", "Category": "2D", "Client": "BUSTOP", "Project": "Bobyan - 5 winners", "Status": "Delivered", "Amount": "-", "PaymentStatus": "Paid", "Notes": "014"}, {"Date": "2020-11-03", "Category": "2D", "Client": "Safari Media", "Project": "Aljarida graphics package", "Status": "Delivered", "Amount": "300.0", "PaymentStatus": "Paid", "Notes": "015"}, {"Date": "2020-11-08", "Category": "2D", "Client": "BUSTOP", "Project": "Bobyan - Velar HTML5 sizes", "Status": "Delivered", "Amount": "300.0", "PaymentStatus": "Paid", "Notes": "016"}, {"Date": "2020-11-11", "Category": "2D", "Client": "M.Alali", "Project": "Alnassar", "Status": "Delivered", "Amount": "500.0", "PaymentStatus": "Paid", "Notes": "017"}, {"Date": "2020-11-11", "Category": "2D", "Client": "Maryam Almuhanna", "Project": "Logo Animation", "Status": "Delivered", "Amount": "50.0", "PaymentStatus": "Paid", "Notes": "018"}, {"Date": "2020-11-30", "Category": "2D", "Client": "BUSTOP", "Project": "Bobyan - Prime App", "Status": "Delivered", "Amount": "300.0", "PaymentStatus": "Paid", "Notes": "019"}, {"Date": "2020-11-30", "Category": "2D", "Client": "Dayer", "Project": "Bobyan - Fikra", "Status": "Delivered", "Amount": "200.0", "PaymentStatus": "Paid", "Notes": "020"}, {"Date": "2020-11-30", "Category": "2D", "Client": "Hamad Alnajjar", "Project": "Salamatak HIV", "Status": "Delivered", "Amount": "350.0", "PaymentStatus": "Paid", "Notes": "021"}, {"Date": "2020-12-09", "Category": "2D", "Client": "BUSTOP", "Project": "Bobyan - 5 winners colors", "Status": "Delivered", "Amount": "-", "PaymentStatus": "Paid", "Notes": "022"}, {"Date": "2020-12-09", "Category": "2D", "Client": "Tarteeb", "Project": "Juice", "Status": "Delivered", "Amount": "350.0", "PaymentStatus": "Paid", "Notes": "023"}, {"Date": "2020-12-11", "Category": "2D", "Client": "Dayer", "Project": "NBK 2021", "Status": "Delivered", "Amount": "150.0", "PaymentStatus": "Paid", "Notes": "024"}, {"Date": "2020-12-24", "Category": "2D", "Client": "BUSTOP", "Project": "Bobyan - 5 winners 2", "Status": "Delivered", "Amount": "-", "PaymentStatus": "Paid", "Notes": "025"}, {"Date": "2020-12-26", "Category": "2D", "Client": "Dayer", "Project": "NBK 2021 P2", "Status": "Delivered", "Amount": "150.0", "PaymentStatus": "Paid", "Notes": "026"}, {"Date": "2020-12-28", "Category": "2D", "Client": "BUSTOP", "Project": "Bobyan - Velar 2", "Status": "Delivered", "Amount": "-", "PaymentStatus": "Paid", "Notes": "027"}, {"Date": "2020-12-29", "Category": "2D", "Client": "M.Alrasheed", "Project": "Bobyan Invest #1", "Status": "Delivered", "Amount": "650.0", "PaymentStatus": "Paid", "Notes": "028"}, {"Date": "2021-01-03", "Category": "2D", "Client": "BUSTOP", "Project": "Bobyan - Velar HTML5 sizes", "Status": "Delivered", "Amount": "450.0", "PaymentStatus": "Paid", "Notes": "029"}, {"Date": "2021-01-10", "Category": "2D", "Client": "Bodai", "Project": "t3rf 3leeh names", "Status": "Delivered", "Amount": "200.0", "PaymentStatus": "Paid", "Notes": "030"}, {"Date": "2021-01-13", "Category": "2D", "Client": "Ibraheem Alshekly", "Project": "SHMP Logo", "Status": "Delivered", "Amount": "70.0", "PaymentStatus": "Paid", "Notes": "031"}, {"Date": "2021-01-14", "Category": "2D", "Client": "Alkunaini", "Project": "Statistics", "Status": "Delivered", "Amount": "900.0", "PaymentStatus": "Paid", "Notes": "032"}, {"Date": "2021-01-20", "Category": "3D", "Client": "V-Thru", "Project": "Sport Car Gym", "Status": "Delivered", "Amount": "350.0", "PaymentStatus": "Paid", "Notes": "033"}, {"Date": "2021-01-23", "Category": "2D", "Client": "BUSTOP", "Project": "Deliveroo", "Status": "Delivered", "Amount": "2500.0", "PaymentStatus": "Paid", "Notes": "034"}, {"Date": "2021-01-21", "Category": "2D", "Client": "BUSTOP", "Project": "bobyan prime fitbit Kuwait Feb", "Status": "Delivered", "Amount": "0", "PaymentStatus": "Paid", "Notes": "035"}, {"Date": "2021-01-23", "Category": "2D", "Client": "NBK", "Project": "Blood Dontation", "Status": "Delivered", "Amount": "600.0", "PaymentStatus": "Paid", "Notes": "036"}, {"Date": "2021-02-15", "Category": "2D", "Client": "BUSTOP", "Project": "Bobyan Prime brands offers", "Status": "Delivered", "Amount": "0", "PaymentStatus": "Paid", "Notes": "037"}, {"Date": "2021-04-12", "Category": "2D", "Client": "BUSTOP", "Project": "Bobyan Kuwait Airways", "Status": "Delivered", "Amount": "0", "PaymentStatus": "Paid", "Notes": "038"}, {"Date": "2021-05-05", "Category": "2D", "Client": "NBK", "Project": "Smartwealth infographics", "Status": "Delivered", "Amount": "350.0", "PaymentStatus": "Paid", "Notes": "039"}, {"Date": "2021-05-24", "Category": "2D", "Client": "Layers Media", "Project": "Transitions", "Status": "Delivered", "Amount": "120.0", "PaymentStatus": "Paid", "Notes": "040"}, {"Date": "2021-05-25", "Category": "3D", "Client": "BUSTOP", "Project": "Bobyan Starbucks", "Status": "Delivered", "Amount": "0", "PaymentStatus": "Paid", "Notes": "041"}, {"Date": "2021-05-28", "Category": "2D", "Client": "BUSTOP", "Project": "Deliveroo GIF", "Status": "Delivered", "Amount": "0", "PaymentStatus": "Paid", "Notes": "042"}, {"Date": "2021-06-15", "Category": "2D", "Client": "SAGCG", "Project": "Footage infographics", "Status": "Delivered", "Amount": "400.0", "PaymentStatus": "Paid", "Notes": "043"}, {"Date": "2021-06-21", "Category": "2D", "Client": "Tarteeb", "Project": "Nabeel Song", "Status": "Delivered", "Amount": "0", "PaymentStatus": "Paid", "Notes": "044"}, {"Date": "2021-06-27", "Category": "2D", "Client": "Dayer", "Project": "GulfBank Text on Videos", "Status": "Delivered", "Amount": "0", "PaymentStatus": "Paid", "Notes": "045"}, {"Date": "2021-06-30", "Category": "2D", "Client": "Bobyan Prime", "Project": "Prizes VFX+GFX", "Status": "Delivered", "Amount": "500.0", "PaymentStatus": "Paid", "Notes": "046"}, {"Date": "2021-06-27", "Category": "2D", "Client": "BUSTOP", "Project": "Prime animation Sizes", "Status": "Delivered", "Amount": "0", "PaymentStatus": "Paid", "Notes": "047"}, {"Date": "2021-07-08", "Category": "2D", "Client": "BUSTOP", "Project": "Prime Fitbit", "Status": "Delivered", "Amount": "0", "PaymentStatus": "Paid", "Notes": "048"}, {"Date": "2021-07-15", "Category": "2D", "Client": "BUSTOP", "Project": "Nomu Insta grid", "Status": "Delivered", "Amount": "0", "PaymentStatus": "Paid", "Notes": "049"}, {"Date": "2021-07-15", "Category": "2D", "Client": "BUSTOP", "Project": "Nomu Lines text (4 sizes)", "Status": "Delivered", "Amount": "0", "PaymentStatus": "Paid", "Notes": "050"}, {"Date": "2021-07-28", "Category": "2D", "Client": "BUSTOP", "Project": "Bobyan Prime Competition", "Status": "Delivered", "Amount": "0", "PaymentStatus": "Paid", "Notes": "051"}, {"Date": "2021-07-28", "Category": "2D", "Client": "Bobyan", "Project": "Onboarding", "Status": "Delivered", "Amount": "1000.0", "PaymentStatus": "Paid", "Notes": "052"}, {"Date": "2021-07-16", "Category": "3D", "Client": "Routine", "Project": "Factory Animation", "Status": "Delivered", "Amount": "900.0", "PaymentStatus": "Paid", "Notes": "053"}, {"Date": "2021-08-04", "Category": "2D", "Client": "BUSTOP", "Project": "Deliveroo GIF", "Status": "Delivered", "Amount": "150.0", "PaymentStatus": "Paid", "Notes": "054"}, {"Date": "2021-08-10", "Category": "2D", "Client": "Rasameel", "Project": "Logo animating", "Status": "Delivered", "Amount": "150.0", "PaymentStatus": "Paid", "Notes": "055"}, {"Date": "2021-08-05", "Category": "3D", "Client": "Elevation Burger", "Project": "Masayel Branch", "Status": "", "Amount": "0", "PaymentStatus": "Paid", "Notes": "056"}, {"Date": "2021-08-22", "Category": "2D", "Client": "UPayment", "Project": "Ending animation", "Status": "Delivered", "Amount": "150.0", "PaymentStatus": "Paid", "Notes": "057"}, {"Date": "2021-08-22", "Category": "2D", "Client": "NBK", "Project": "Karafi video", "Status": "Delivered", "Amount": "400.0", "PaymentStatus": "Paid", "Notes": "058"}, {"Date": "2021-08-31", "Category": "2D", "Client": "Boubyan", "Project": "Prime Silliuete", "Status": "Delivered", "Amount": "900.0", "PaymentStatus": "Paid", "Notes": "059"}, {"Date": "2021-09-07", "Category": "2D", "Client": "Tarteeb", "Project": "Qurtuba logo animate", "Status": "Delivered", "Amount": "0", "PaymentStatus": "Paid", "Notes": "060"}, {"Date": "2021-09-15", "Category": "HTML", "Client": "BUSTOP", "Project": "Boubyan Rewards ", "Status": "Delivered", "Amount": "300.0", "PaymentStatus": "Paid", "Notes": "061"}, {"Date": "2021-09-15", "Category": "HTML", "Client": "BUSTOP", "Project": "Apple Bundle", "Status": "Delivered", "Amount": "300.0", "PaymentStatus": "Paid", "Notes": "062"}, {"Date": "2021-09-15", "Category": "2D", "Client": "BUSTOP", "Project": "Apple Bundle Outdoors", "Status": "Delivered", "Amount": "200.0", "PaymentStatus": "Paid", "Notes": "063"}, {"Date": "2021-09-15", "Category": "2D", "Client": "BUSTOP", "Project": "Apple Bundle Mall Screens", "Status": "Delivered", "Amount": "300.0", "PaymentStatus": "Paid", "Notes": "064"}, {"Date": "2021-09-09", "Category": "2D", "Client": "Ahal Aliktisas", "Project": "Infographics", "Status": "Delivered", "Amount": "1200.0", "PaymentStatus": "Paid", "Notes": "065"}, {"Date": "2021-09-09", "Category": "2D", "Client": "KTECH", "Project": "Motion Graphics", "Status": "Delivered", "Amount": "900.0", "PaymentStatus": "Paid", "Notes": "066"}, {"Date": "2021-10-05", "Category": "2D", "Client": "NBK", "Project": "Text Messages, ako mako text+vfx", "Status": "Delivered", "Amount": "350.0", "PaymentStatus": "Paid", "Notes": "067"}, {"Date": "2021-10-17", "Category": "HTML", "Client": "BUSTOP", "Project": "Nomu animations", "Status": "Delivered", "Amount": "350.0", "PaymentStatus": "Paid", "Notes": "068"}, {"Date": "2021-10-17", "Category": "HTML", "Client": "BUSTOP", "Project": "Nomu HTML5", "Status": "Delivered", "Amount": "650.0", "PaymentStatus": "Paid", "Notes": "069"}, {"Date": "2021-10-20", "Category": "2D", "Client": "Tarteeb", "Project": "Fareaa", "Status": "Delivered", "Amount": "0", "PaymentStatus": "Paid", "Notes": "070"}, {"Date": "2021-10-29", "Category": "2D", "Client": "BUSTOP", "Project": "Prime VFX video", "Status": "Delivered", "Amount": "300.0", "PaymentStatus": "Paid", "Notes": "071"}, {"Date": "2021-10-27", "Category": "2D", "Client": "BUSTOP", "Project": "Deliveroo", "Status": "Delivered", "Amount": "450.0", "PaymentStatus": "Paid", "Notes": "072"}, {"Date": "2021-10-28", "Category": "2D", "Client": "NBK", "Project": "40K 3D text", "Status": "Delivered", "Amount": "150.0", "PaymentStatus": "Paid", "Notes": "073"}, {"Date": "2021-10-28", "Category": "2D", "Client": "Shasha", "Project": "Logo reveal", "Status": "Delivered", "Amount": "450.0", "PaymentStatus": "Paid", "Notes": "074"}, {"Date": "2021-11-15", "Category": "2D", "Client": "Sanbuk", "Project": "Video Animation", "Status": "Delivered", "Amount": "450.0", "PaymentStatus": "Paid", "Notes": "075"}, {"Date": "2021-11-24", "Category": "2D", "Client": "Elevation Burger", "Project": "The Egg Yolk", "Status": "Delivered", "Amount": "80.0", "PaymentStatus": "Paid", "Notes": "076"}, {"Date": "2021-11-26", "Category": "VFX", "Client": "BIG", "Project": "NBK Camping", "Status": "Delivered", "Amount": "200.0", "PaymentStatus": "Paid", "Notes": "077"}, {"Date": "2021-11-29", "Category": "2D", "Client": "KCST", "Project": "Timeline", "Status": "Delivered", "Amount": "500.0", "PaymentStatus": "Paid", "Notes": "078"}, {"Date": "2021-11-29", "Category": "2D", "Client": "Dawrat", "Project": "Logo Animation + Package", "Status": "Delivered", "Amount": "350.0", "PaymentStatus": "Paid", "Notes": "079"}, {"Date": "2021-12-04", "Category": "3D", "Client": "NBK", "Project": "Money Box", "Status": "Delivered", "Amount": "250.0", "PaymentStatus": "Paid", "Notes": "080"}, {"Date": "2021-12-04", "Category": "2D", "Client": "Js Bakery", "Project": "Keying + animation", "Status": "Delivered", "Amount": "600.0", "PaymentStatus": "Paid", "Notes": "081"}, {"Date": "2021-12-04", "Category": "2D", "Client": "BUSTOP", "Project": "Nomo App video", "Status": "Delivered", "Amount": "800.0", "PaymentStatus": "Paid", "Notes": "082"}, {"Date": "2021-12-05", "Category": "HTML", "Client": "BUSTOP", "Project": "Msa3ed HTMLS", "Status": "Delivered", "Amount": "350.0", "PaymentStatus": "Paid", "Notes": "083"}, {"Date": "2021-12-15", "Category": "2D", "Client": "NBK", "Project": "Social Media Stats", "Status": "Delivered", "Amount": "700.0", "PaymentStatus": "Paid", "Notes": "084"}, {"Date": "2022-01-15", "Category": "2D", "Client": "Js Bakery", "Project": "Story Size", "Status": "Delivered", "Amount": "100.0", "PaymentStatus": "Paid", "Notes": "085"}, {"Date": "2022-01-15", "Category": "HTML", "Client": "BUSTOP", "Project": "Boubyan Business HTMLS", "Status": "Delivered", "Amount": "350.0", "PaymentStatus": "Paid", "Notes": "086"}, {"Date": "2022-01-16", "Category": "2D", "Client": "Js Bakery", "Project": "GIFS", "Status": "Delivered", "Amount": "75.0", "PaymentStatus": "Paid", "Notes": "087"}, {"Date": "2022-01-16", "Category": "2D", "Client": "BUSTOP", "Project": "Prime Winter Discount", "Status": "Delivered", "Amount": "350.0", "PaymentStatus": "Paid", "Notes": "088"}, {"Date": "2022-01-17", "Category": "2D", "Client": "Nomou", "Project": "Characters illustrations", "Status": "Delivered", "Amount": "750.0", "PaymentStatus": "Paid", "Notes": "089"}, {"Date": "2022-01-17", "Category": "2D", "Client": "Tobo", "Project": "Dancing Baby", "Status": "Delivered", "Amount": "300.0", "PaymentStatus": "Paid", "Notes": "090"}, {"Date": "2022-01-24", "Category": "2D", "Client": "Dawrat", "Project": "Photos Animation", "Status": "Delivered", "Amount": "400.0", "PaymentStatus": "Paid", "Notes": "091"}, {"Date": "2022-01-27", "Category": "2D", "Client": "Scale", "Project": "Photos Animation", "Status": "Delivered", "Amount": "0", "PaymentStatus": "Paid", "Notes": "092"}, {"Date": "2022-01-28", "Category": "2D", "Client": "Deliveroo", "Project": "EN 6 sec, AR 12 sec, GIF", "Status": "Delivered", "Amount": "500.0", "PaymentStatus": "Paid", "Notes": "093"}, {"Date": "2022-01-31", "Category": "2D/3D", "Client": "The Channel", "Project": "M2R", "Status": "Delivered", "Amount": "2200.0", "PaymentStatus": "Paid", "Notes": "094"}, {"Date": "2022-02-07", "Category": "VFX", "Client": "NBK", "Project": "Theif", "Status": "Delivered", "Amount": "500.0", "PaymentStatus": "Paid", "Notes": "095"}, {"Date": "2022-02-09", "Category": "3D", "Client": "MADO", "Project": "Kuwait Towers Sumit", "Status": "Delivered", "Amount": "150.0", "PaymentStatus": "Paid", "Notes": "096"}, {"Date": "2022-02-11", "Category": "2D", "Client": "Deliveroo", "Project": "GIFs", "Status": "Delivered", "Amount": "300.0", "PaymentStatus": "Paid", "Notes": "097"}, {"Date": "2022-02-11", "Category": "2D", "Client": "KFC", "Project": "VFX", "Status": "Delivered", "Amount": "0", "PaymentStatus": "Paid", "Notes": "098"}, {"Date": "2022-02-11", "Category": "2D", "Client": "Dr.Wa2el", "Project": "Logo animate", "Status": "Delivered", "Amount": "150.0", "PaymentStatus": "Paid", "Notes": "099"}, {"Date": "2022-02-05", "Category": "2D", "Client": "BUSTOP", "Project": "Prime - Karting / winter discount / events & giveaways", "Status": "Delivered", "Amount": "300.0", "PaymentStatus": "Paid", "Notes": "100"}, {"Date": "2022-03-17", "Category": "2D", "Client": "Tarteeb", "Project": "KCB Animation Video", "Status": "Delivered", "Amount": "450.0", "PaymentStatus": "Paid", "Notes": "101"}, {"Date": "2022-03-22", "Category": "3D", "Client": "Costa", "Project": "3 animation videos", "Status": "44564.0", "Amount": "1200.0", "PaymentStatus": "Paid", "Notes": "102"}, {"Date": "2022-03-22", "Category": "2D", "Client": "Deliveroo", "Project": "Ramadan 8 post + GIF", "Status": "Delivered", "Amount": "700.0", "PaymentStatus": "Paid", "Notes": "103"}, {"Date": "2022-03-23", "Category": "3D", "Client": "NBK", "Project": "Camel 2022", "Status": "Delivered", "Amount": "250.0", "PaymentStatus": "Paid", "Notes": "104"}, {"Date": "2022-03-22", "Category": "2D", "Client": "PIFSS", "Project": "Ektiwary", "Status": "Delivered", "Amount": "850.0", "PaymentStatus": "Paid", "Notes": "105"}, {"Date": "2022-03-23", "Category": "2D", "Client": "Gulf Bank", "Project": "Gala", "Status": "Delivered", "Amount": "500.0", "PaymentStatus": "Canceled ", "Notes": "106"}, {"Date": "2022-03-26", "Category": "2D", "Client": "My Box", "Project": "Logo + Teasers", "Status": "Delivered", "Amount": "1200.0", "PaymentStatus": "Paid", "Notes": "107"}, {"Date": "2022-04-03", "Category": "2D", "Client": "NBK", "Project": "Ramadan Posts", "Status": "", "Amount": "0", "PaymentStatus": "Canceled ", "Notes": "108"}, {"Date": "2022-04-01", "Category": "2D", "Client": "Mado", "Project": "Boom + Logo intro", "Status": "Delivered", "Amount": "150.0", "PaymentStatus": "Paid", "Notes": "109"}, {"Date": "2022-04-03", "Category": "2D", "Client": "KOTC", "Project": "Ghazoy Animation", "Status": "Delivered", "Amount": "600.0", "PaymentStatus": "Paid", "Notes": "110"}, {"Date": "2022-04-05", "Category": "2D", "Client": "KIB", "Project": "Teaser+ 3 Videos", "Status": "Delivered", "Amount": "2000.0", "PaymentStatus": "Paid", "Notes": "111"}, {"Date": "2022-04-18", "Category": "2D", "Client": "BUSTOP", "Project": "Nomo Eid", "Status": "Delivered", "Amount": "600.0", "PaymentStatus": "Paid", "Notes": "112"}, {"Date": "2022-05-10", "Category": "2D", "Client": "BUSTOP", "Project": "Prime discount Post+Story", "Status": "Delivered", "Amount": "300.0", "PaymentStatus": "Paid", "Notes": "113"}, {"Date": "2022-05-15", "Category": "2D", "Client": "Almusaiteer", "Project": "Text VFX", "Status": "Delivered", "Amount": "350.0", "PaymentStatus": "Paid", "Notes": "114"}, {"Date": "2022-05-18", "Category": "2D", "Client": "BUSTOP", "Project": "Prime Onboarding Process Post+Story", "Status": "Delivered", "Amount": "300.0", "PaymentStatus": "Paid", "Notes": "115"}, {"Date": "2022-05-24", "Category": "3D", "Client": "BUSTOP", "Project": "Bobyan WorldCup", "Status": "Delivered", "Amount": "1000.0", "PaymentStatus": "Paid", "Notes": "116"}, {"Date": "2022-06-03", "Category": "3D", "Client": "BUSTOP", "Project": "Money Stack", "Status": "Delivered", "Amount": "350.0", "PaymentStatus": "Paid", "Notes": "117"}, {"Date": "2022-06-03", "Category": "2D", "Client": "Lmnys", "Project": "4 Animation videos PRIME", "Status": "Delivered", "Amount": "600.0", "PaymentStatus": "Paid", "Notes": "118"}, {"Date": "2022-06-13", "Category": "2D", "Client": "BUSTOP", "Project": "Nomo June (Dubai/London)-Invest", "Status": "Delivered", "Amount": "300.0", "PaymentStatus": "Paid", "Notes": "119"}, {"Date": "2022-06-17", "Category": "2D", "Client": "BUSTOP", "Project": "Nomo Travel ", "Status": "Delivered", "Amount": "300.0", "PaymentStatus": "Paid", "Notes": "120"}, {"Date": "2022-06-17", "Category": "2D", "Client": "BUSTOP", "Project": "Prime Graduate+Edits", "Status": "Delivered", "Amount": "200.0", "PaymentStatus": "Paid", "Notes": "121"}, {"Date": "2022-07-03", "Category": "2D", "Client": "NBK", "Project": "FireForce", "Status": "Delivered", "Amount": "1650.0", "PaymentStatus": "Paid", "Notes": "122"}, {"Date": "2022-07-03", "Category": "2D", "Client": "BUSTOP", "Project": "Deliveroo Summer Campaign", "Status": "Delivered", "Amount": "1400.0", "PaymentStatus": "Paid", "Notes": "123"}, {"Date": "2022-07-25", "Category": "2D", "Client": "BUSTOP", "Project": "Nomo July Posts (22-13-8)", "Status": "Delivered", "Amount": "300.0", "PaymentStatus": "Paid", "Notes": "124"}, {"Date": "2022-08-28", "Category": "2D", "Client": "CUT", "Project": "Website", "Status": "Delivered", "Amount": "500.0", "PaymentStatus": "Paid", "Notes": "125"}, {"Date": "2022-08-29", "Category": "2D", "Client": "Abdulkareem Alkandry", "Project": "Illustration animation+Video", "Status": "Delivered", "Amount": "750.0", "PaymentStatus": "Paid", "Notes": "126"}, {"Date": "2022-08-30", "Category": "2D", "Client": "GASTRO", "Project": "Kuwait to London", "Status": "Delivered", "Amount": "400.0", "PaymentStatus": "Paid", "Notes": "127"}, {"Date": "2022-09-08", "Category": "2D", "Client": "BUSTOP", "Project": "Nomo Aug Posts (24-5)", "Status": "Delivered", "Amount": "300.0", "PaymentStatus": "Paid", "Notes": "128"}, {"Date": "2022-08-22", "Category": "2D", "Client": "AlAgil", "Project": "Nazaha", "Status": "Delivered", "Amount": "100.0", "PaymentStatus": "Paid", "Notes": "129"}, {"Date": "2022-08-22", "Category": "2D", "Client": "Safari Media", "Project": "Dlehi Alhajri", "Status": "Delivered", "Amount": "250.0", "PaymentStatus": "Paid", "Notes": "130"}, {"Date": "2022-09-06", "Category": "2D", "Client": "Safari Media", "Project": "Ahmed Alaskar", "Status": "Delivered", "Amount": "250.0", "PaymentStatus": "Paid", "Notes": "131"}, {"Date": "2022-09-08", "Category": "2D", "Client": "BUSTOP", "Project": "Nomo Aug Reels 1+2", "Status": "Delivered", "Amount": "300.0", "PaymentStatus": "Paid", "Notes": "132"}, {"Date": "2022-09-12", "Category": "3D", "Client": "Bowl and Whisky", "Project": "Bowl Macha Animation", "Status": "Delivered", "Amount": "200.0", "PaymentStatus": "Paid", "Notes": "133"}, {"Date": "2022-11-06", "Category": "3D", "Client": "Costa", "Project": "3D models cost", "Status": "Delivered", "Amount": "82.0", "PaymentStatus": "Paid", "Notes": "134"}, {"Date": "2022-11-06", "Category": "2D", "Client": "BUSTOP", "Project": "Deliveroo World cup", "Status": "Delivered", "Amount": "1600.0", "PaymentStatus": "Paid", "Notes": "135"}, {"Date": "2022-11-13", "Category": "3D", "Client": "Mythical", "Project": "Jahez", "Status": "Delivered", "Amount": "130.0", "PaymentStatus": "Paid", "Notes": "136"}, {"Date": "2022-11-17", "Category": "3D", "Client": "Qalam", "Project": "Nomo Add/Exchange currency", "Status": "Delivered", "Amount": "1500.0", "PaymentStatus": "Paid", "Notes": "137"}, {"Date": "2022-11-26", "Category": "2D", "Client": "M.AlAli", "Project": "KCST animations", "Status": "Delivered", "Amount": "300.0", "PaymentStatus": "Paid", "Notes": "138"}, {"Date": "2022-11-26", "Category": "2D", "Client": "NBK", "Project": "Tamakkan", "Status": "Delivered", "Amount": "1350.0", "PaymentStatus": "Paid", "Notes": "139"}, {"Date": "2022-11-30", "Category": "3D", "Client": "MC Group", "Project": "KFH Investment", "Status": "Delivered", "Amount": "700.0", "PaymentStatus": "Paid", "Notes": "140"}, {"Date": "2022-11-30", "Category": "3D", "Client": "NBK", "Project": "Phone + Competition animation", "Status": "Delivered", "Amount": "1100.0", "PaymentStatus": "Paid", "Notes": "141"}, {"Date": "2022-12-02", "Category": "2D", "Client": "BUSTOP", "Project": "Nomo multi currency reels", "Status": "Delivered", "Amount": "500.0", "PaymentStatus": "Paid", "Notes": "142"}, {"Date": "2022-12-19", "Category": "2D", "Client": "BUSTOP", "Project": "Prime Dicount Video", "Status": "Delivered", "Amount": "-", "PaymentStatus": "Contract", "Notes": "143"}, {"Date": "2022-12-20", "Category": "2D", "Client": "BUSTOP", "Project": "Dazza", "Status": "Delivered", "Amount": "-", "PaymentStatus": "Contract", "Notes": "144"}, {"Date": "2022-12-25", "Category": "2D", "Client": "BUSTOP", "Project": "Deliveroo", "Status": "Delivered", "Amount": "1760.0", "PaymentStatus": "Paid", "Notes": "145"}, {"Date": "2022-12-25", "Category": "2D", "Client": "VTHru", "Project": "Business Presintation VO Amend", "Status": "Delivered", "Amount": "150.0", "PaymentStatus": "Paid", "Notes": "146"}, {"Date": "2022-12-19", "Category": "2D", "Client": "BUSTOP", "Project": "Prime Pret Winter", "Status": "Delivered", "Amount": "-", "PaymentStatus": "Contract", "Notes": "147"}, {"Date": "2022-12-23", "Category": "2D", "Client": "itihad Jamiyat", "Project": "Sahel app services", "Status": "", "Amount": "1300.0", "PaymentStatus": "Paid", "Notes": "148"}, {"Date": "2022-12-30", "Category": "2D", "Client": "Alsry3", "Project": "Dabdoob", "Status": "Delivered", "Amount": "100.0", "PaymentStatus": "Paid", "Notes": "149"}, {"Date": "2023-01-09", "Category": "2D", "Client": "NBK", "Project": "Video 1 million", "Status": "Delivered", "Amount": "150.0", "PaymentStatus": "Paid", "Notes": "150"}, {"Date": "2023-01-27", "Category": "2D", "Client": "Dawrat", "Project": "KFH Package", "Status": "Delivered", "Amount": "400.0", "PaymentStatus": "Paid", "Notes": "151"}, {"Date": "2023-03-15", "Category": "2D", "Client": "Gulf Bank", "Project": "Women Empowering", "Status": "Delivered", "Amount": "2300.0", "PaymentStatus": "Paid", "Notes": "152"}, {"Date": "2023-03-17", "Category": "2D", "Client": "BUSTOP", "Project": "Deliveroo Ramadhan", "Status": "Delivered", "Amount": "600.0", "PaymentStatus": "Paid", "Notes": "153"}, {"Date": "2023-04-05", "Category": "2D", "Client": "Gulf Bank", "Project": "Ramadan Gabhga", "Status": "Delivered", "Amount": "350.0", "PaymentStatus": "Paid", "Notes": "154"}, {"Date": "2023-04-06", "Category": "2D", "Client": "Dima", "Project": "Event Graphics", "Status": "Delivered", "Amount": "800.0", "PaymentStatus": "Paid", "Notes": "155"}, {"Date": "2023-04-25", "Category": "3D", "Client": "Magnet", "Project": "Location+Print+Bags", "Status": "", "Amount": "650.0", "PaymentStatus": "Paid", "Notes": "156"}, {"Date": "2023-04-25", "Category": "Coverage", "Client": "NBK", "Project": "Central America Vlogs", "Status": "Delivered", "Amount": "3200.0", "PaymentStatus": "Paid", "Notes": "157"}, {"Date": "2023-05-08", "Category": "2D", "Client": "Husam Alawadhy", "Project": "Alduwailah Video (Street)", "Status": "Delivered", "Amount": "300.0", "PaymentStatus": "Paid", "Notes": "158"}, {"Date": "2023-05-08", "Category": "2D", "Client": "Husam Alawadhy", "Project": "Alduwailah Little Girl", "Status": "Delivered", "Amount": "850.0", "PaymentStatus": "Paid", "Notes": "159"}, {"Date": "2023-05-10", "Category": "2D", "Client": "Husam Alawadhy", "Project": "Abdulkareem Alkandry Post", "Status": "Delivered", "Amount": "300.0", "PaymentStatus": "Paid", "Notes": "160"}, {"Date": "2023-05-11", "Category": "Coverage", "Client": "NBK", "Project": "Jawhara Coverage", "Status": "Delivered", "Amount": "650.0", "PaymentStatus": "Paid", "Notes": "161"}, {"Date": "2023-05-13", "Category": "2D", "Client": "Gulf Bank", "Project": "Ajyal Logo", "Status": "Delivered", "Amount": "150.0", "PaymentStatus": "Paid", "Notes": "162"}, {"Date": "2023-05-13", "Category": "", "Client": "Wix", "Project": "Sarajevo Resort", "Status": "Delivered", "Amount": "100.0", "PaymentStatus": "Paid", "Notes": "163"}, {"Date": "2023-06-06", "Category": "2D", "Client": "BUSTOP", "Project": "Deliveroo unlimited delivery", "Status": "Delivered", "Amount": "1200.0", "PaymentStatus": "Paid", "Notes": "164"}, {"Date": "2023-07-04", "Category": "2D", "Client": "BUSTOP", "Project": "Deliveroo Hot Summer Deals", "Status": "Delivered", "Amount": "350.0", "PaymentStatus": "Paid", "Notes": "165"}, {"Date": "2023-07-09", "Category": "2D", "Client": "SoticPro", "Project": "Presnitation staduim", "Status": "Delivered", "Amount": "450.0", "PaymentStatus": "Paid", "Notes": "166"}, {"Date": "2023-05-13", "Category": "", "Client": "Wix", "Project": "Sarajevo Resort emails", "Status": "Delivered", "Amount": "92.0", "PaymentStatus": "Paid", "Notes": "167"}, {"Date": "2023-08-02", "Category": "", "Client": "Sarajevo Resort", "Project": "Resrutant [Penny] 2 Hanging lights", "Status": "Delivered", "Amount": "260 BAM", "PaymentStatus": "Paid", "Notes": "168"}, {"Date": "2023-08-06", "Category": "", "Client": "Sarajevo Resort", "Project": "Resrutant [OBI] Paint - 1 top light - 1 side light - brushes", "Status": "Delivered", "Amount": "366 BAM", "PaymentStatus": "Paid", "Notes": "169"}, {"Date": "2023-08-07", "Category": "", "Client": "Sarajevo Resort", "Project": "Resturant [OBI] Plastic cable cover- 5 Top lights - 20 bulbs", "Status": "Delivered", "Amount": "655 BAM", "PaymentStatus": "Paid", "Notes": "170"}, {"Date": "2023-08-09", "Category": "", "Client": "Sarajevo Resort", "Project": "Resturant [Tariq] Painting - Light fixing", "Status": "Delivered", "Amount": "190 BAM", "PaymentStatus": "Paid", "Notes": "171"}, {"Date": "2023-08-09", "Category": "", "Client": "Sarajevo Resort", "Project": "Resort [OBI] LED tree lights - LED 1 bridge light", "Status": "Delivered", "Amount": "150 BAM", "PaymentStatus": "Paid", "Notes": "172"}, {"Date": "2023-08-10", "Category": "", "Client": "Sarajevo Resort", "Project": "Rent [Jysk] 2 beds - 2 sheets - 2 pillows", "Status": "Delivered", "Amount": "497 BAM", "PaymentStatus": "Paid", "Notes": "173"}, {"Date": "2023-08-10", "Category": "", "Client": "Sarajevo Resort", "Project": "Rent remaining money from 2022 season", "Status": "Delivered", "Amount": "2000 EUR", "PaymentStatus": "Paid", "Notes": "174"}, {"Date": "2023-08-10", "Category": "", "Client": "Sarajevo Resort", "Project": "Resort [Jysk] Solar lights ", "Status": "Delivered", "Amount": "169.5 BAM", "PaymentStatus": "Paid", "Notes": "175"}, {"Date": "2023-08-10", "Category": "", "Client": "Sarajevo Resort", "Project": "Resort [Penny] Playgrouns paint ", "Status": "Delivered", "Amount": "15 BAM", "PaymentStatus": "Paid", "Notes": "176"}, {"Date": "2023-08-20", "Category": "", "Client": "Sarajevo Resort", "Project": "Resort [Tariq] Fix seesaw ", "Status": "Delivered", "Amount": "50 BAM", "PaymentStatus": "Paid", "Notes": "177"}, {"Date": "2023-08-20", "Category": "", "Client": "Sarajevo Resort", "Project": "Resort 75 Donum sales commision", "Status": "Delivered", "Amount": "1400.0", "PaymentStatus": "Paid", "Notes": "178"}, {"Date": "2023-08-20", "Category": "", "Client": "Sarajevo Resort", "Project": "Resort remaining money from the 7,000 eur transaction", "Status": "Delivered", "Amount": "210.0", "PaymentStatus": "Paid", "Notes": "179"}, {"Date": "2023-08-30", "Category": "2D", "Client": "Safari Media", "Project": "Afnan Lughawiya TV Program Package", "Status": "Delivered", "Amount": "1200.0", "PaymentStatus": "Paid", "Notes": "180"}, {"Date": "2023-09-05", "Category": "2D", "Client": "Gulf Bank", "Project": "Ajyal Instagram grid + animation videos", "Status": "Delivered", "Amount": "350.0", "PaymentStatus": "Paid", "Notes": "181"}, {"Date": "2023-09-14", "Category": "2D", "Client": "Reach", "Project": "Animation PR Campaign Alghanim", "Status": "Delivered", "Amount": "300.0", "PaymentStatus": "Paid", "Notes": "182"}, {"Date": "2023-09-08", "Category": "3D", "Client": "CBK", "Project": "Najma Draw", "Status": "Delivered", "Amount": "2000.0", "PaymentStatus": "Paid", "Notes": "183"}, {"Date": "2023-10-24", "Category": "3D", "Client": "Cofe App", "Project": "Cofe Festival", "Status": "Delivered", "Amount": "900.0", "PaymentStatus": "Paid", "Notes": "184"}, {"Date": "2023-10-29", "Category": "3D", "Client": "Boubyan", "Project": "Card 2 Gift", "Status": "Delivered", "Amount": "600.0", "PaymentStatus": "Paid", "Notes": "185"}, {"Date": "2023-10-31", "Category": "3D", "Client": "CBK", "Project": "Najma Draw - Katha", "Status": "Delivered", "Amount": "2000.0", "PaymentStatus": "Paid", "Notes": "186"}, {"Date": "2023-12-10", "Category": "3D", "Client": "Costa", "Project": "Gingerbread cinema", "Status": "Delivered", "Amount": "200.0", "PaymentStatus": "Paid", "Notes": "187"}, {"Date": "2024-02-01", "Category": "2D", "Client": "Everyone Films", "Project": "Boubyan AD VO - Tariq", "Status": "Delivered", "Amount": "150.0", "PaymentStatus": "Paid", "Notes": "188"}, {"Date": "2024-02-05", "Category": "2D", "Client": "BUSTOP", "Project": "Boubyan Animation VOs", "Status": "Delivered", "Amount": "150.0", "PaymentStatus": "Paid", "Notes": "189"}, {"Date": "2024-02-05", "Category": "2D", "Client": "Dawrat", "Project": "SDB", "Status": "Delivered", "Amount": "150.0", "PaymentStatus": "Paid", "Notes": "190"}, {"Date": "2024-04-01", "Category": "Video", "Client": "NBK", "Project": "Jawhara", "Status": "Delivered", "Amount": "650.0", "PaymentStatus": "Paid", "Notes": "191"}, {"Date": "2024-04-22", "Category": "Video", "Client": "NBK", "Project": "Jawhara 360", "Status": "Delivered", "Amount": "500.0", "PaymentStatus": "Paid", "Notes": "192"}, {"Date": "2024-03-06", "Category": "3D", "Client": "CBK", "Project": "Najma Draw - 2024", "Status": "Delivered", "Amount": "3000.0", "PaymentStatus": "Paid", "Notes": "193"}, {"Date": "2024-04-21", "Category": "3D", "Client": "CBK", "Project": "Drone", "Status": "Delivered", "Amount": "100.0", "PaymentStatus": "Paid", "Notes": "194"}, {"Date": "2024-05-18", "Category": "2D", "Client": "Mybox", "Project": "SME Video", "Status": "Delivered", "Amount": "400.0", "PaymentStatus": "Paid", "Notes": "195"}, {"Date": "2024-06-04", "Category": "3D", "Client": "CBK", "Project": "Najma Eid", "Status": "Delivered", "Amount": "500.0", "PaymentStatus": "Paid", "Notes": "196"}, {"Date": "2024-06-24", "Category": "2D", "Client": "Tarteeb", "Project": "Majid Almihandis", "Status": "Delivered", "Amount": "200.0", "PaymentStatus": "Paid", "Notes": "197"}, {"Date": "2024-06-25", "Category": "3D", "Client": "CBK", "Project": "Najma Khairan", "Status": "Delivered", "Amount": "1050.0", "PaymentStatus": "Paid", "Notes": "198"}, {"Date": "2024-06-26", "Category": "VO", "Client": "Bustop", "Project": "boubyan mandoob 3 videos", "Status": "Delivered", "Amount": "150.0", "PaymentStatus": "Paid", "Notes": "199"}, {"Date": "2024-07-25", "Category": "3D", "Client": "CBK", "Project": "Najma Khairan Messages", "Status": "Delivered", "Amount": "300.0", "PaymentStatus": "Paid", "Notes": "200"}, {"Date": "2024-08-19", "Category": "2D", "Client": "MOI", "Project": "Police clothes presintation", "Status": "Delivered", "Amount": "0", "PaymentStatus": "Paid", "Notes": "201"}, {"Date": "2024-08-19", "Category": "Video", "Client": "Motory", "Project": "Volvo+wash", "Status": "Delivered", "Amount": "450.0", "PaymentStatus": "Paid", "Notes": "202"}, {"Date": "2024-09-01", "Category": "2D", "Client": "Shakaltna", "Project": "Intro", "Status": "Delivered", "Amount": "900.0", "PaymentStatus": "Paid", "Notes": "203"}, {"Date": "2024-08-14", "Category": "Video", "Client": "Mitsubishi", "Project": "Ad", "Status": "Delivered", "Amount": "400.0", "PaymentStatus": "Paid", "Notes": "204"}, {"Date": "2024-08-18", "Category": "Photo", "Client": "MOI", "Project": "MOI new clothes", "Status": "Delivered", "Amount": "150.0", "PaymentStatus": "Paid", "Notes": "205"}, {"Date": "2024-10-13", "Category": "Video", "Client": "Mitsubishi", "Project": "Ad montero", "Status": "Delivered", "Amount": "400.0", "PaymentStatus": "Paid", "Notes": "206"}, {"Date": "2024-09-09", "Category": "Video", "Client": "Warehouse", "Project": "Stop Motion + animation", "Status": "Delivered", "Amount": "600.0", "PaymentStatus": "Paid", "Notes": "207"}, {"Date": "2024-11-13", "Category": "VO", "Client": "Mitsubishi", "Project": "Deals VO", "Status": "Delivered", "Amount": "100.0", "PaymentStatus": "Paid", "Notes": "208"}, {"Date": "2024-11-15", "Category": "2D", "Client": "Tarteeb", "Project": "KCST panels graduations", "Status": "Delivered", "Amount": "60.0", "PaymentStatus": "Paid", "Notes": "209"}, {"Date": "2024-11-16", "Category": "Video", "Client": "22Sim", "Project": "Video Reel", "Status": "Delivered", "Amount": "300.0", "PaymentStatus": "Paid", "Notes": "210"}, {"Date": "2024-11-08", "Category": "2D", "Client": "NBK", "Project": "Map ", "Status": "Delivered", "Amount": "200.0", "PaymentStatus": "Paid", "Notes": "211"}, {"Date": "2025-06-13", "Category": "Video", "Client": "Cherry", "Project": "Video Ad", "Status": "Delivered", "Amount": "1000.0", "PaymentStatus": "Paid", "Notes": "212"}, {"Date": "2025-07-12", "Category": "2D", "Client": "Tarteeb", "Project": "Zain - AlEsraa - Muneera - Farwaniya", "Status": "Delivered", "Amount": "300.0", "PaymentStatus": "Paid", "Notes": "213"}, {"Date": "2025-07-12", "Category": "Video", "Client": "AMP", "Project": "Watchamen Collab Abdulwahab", "Status": "Delivered", "Amount": "250.0", "PaymentStatus": "Paid", "Notes": "214"}, {"Date": "2025-07-14", "Category": "Video", "Client": "Cherry", "Project": "Video Ad + Alkhayat", "Status": "Delivered", "Amount": "400.0", "PaymentStatus": "Paid", "Notes": "215"}, {"Date": "2025-08-28", "Category": "Video", "Client": "Cherry", "Project": "Chery Auto World show", "Status": "Delivered", "Amount": "200.0", "PaymentStatus": "Paid", "Notes": "216"}, {"Date": "2025-08-28", "Category": "Video", "Client": "Cherry", "Project": "Tiggo 8", "Status": "Delivered", "Amount": "400.0", "PaymentStatus": "Paid", "Notes": "217"}, {"Date": "2025-08-28", "Category": "Video", "Client": "Cherry", "Project": "Chery Auto World show 2", "Status": "Delivered", "Amount": "200.0", "PaymentStatus": "Paid", "Notes": "218"}, {"Date": "2025-07-24", "Category": "Video", "Client": "Neo Clinic", "Project": "Video Ad + Alkhayat", "Status": "Delivered", "Amount": "400.0", "PaymentStatus": "Paid", "Notes": "219"}, {"Date": "2025-10-01", "Category": "Video", "Client": "Cherry", "Project": "Chery 5 years anniversary appearance", "Status": "Delivered", "Amount": "200.0", "PaymentStatus": "Paid", "Notes": "220"}, {"Date": "2025-10-01", "Category": "Video", "Client": "Cherry", "Project": "China Trip", "Status": "Delivered", "Amount": "2000.0", "PaymentStatus": "Paid", "Notes": "221"}, {"Date": "2025-10-02", "Category": "Video", "Client": "Meat at Tony", "Project": "Video", "Status": "Delivered", "Amount": "400.0", "PaymentStatus": "Paid", "Notes": "222"}, {"Date": "2025-10-28", "Category": "Video", "Client": "Jad Fakahani", "Project": "Video", "Status": "Delivered", "Amount": "250.0", "PaymentStatus": "Paid", "Notes": "223"}, {"Date": "2025-07-08", "Category": "2D", "Client": "Warba", "Project": "Gold Account", "Status": "Delivered", "Amount": "500.0", "PaymentStatus": "Paid", "Notes": "224"}, {"Date": "2025-07-08", "Category": "2D", "Client": "Warba", "Project": "Royal Banking", "Status": "Delivered", "Amount": "800.0", "PaymentStatus": "Paid", "Notes": "225"}, {"Date": "2025-07-08", "Category": "2D", "Client": "Warba", "Project": "Royal Banking Recap", "Status": "Delivered", "Amount": "500.0", "PaymentStatus": "Paid", "Notes": "226"}, {"Date": "2025-09-11", "Category": "2D", "Client": "Butstop", "Project": "FIP (VFX teaser-Sizes)", "Status": "Delivered", "Amount": "400.0", "PaymentStatus": "Paid", "Notes": "227"}, {"Date": "2025-10-23", "Category": "Video", "Client": "KMS", "Project": "Jazeera Breast awareness", "Status": "Delivered", "Amount": "300.0", "PaymentStatus": "Paid", "Notes": "228"}, {"Date": "2025-10-31", "Category": "Video", "Client": "BYD", "Project": "BYD", "Status": "Delivered", "Amount": "1500.0", "PaymentStatus": "Paid", "Notes": "229"}, {"Date": "2025-12-03", "Category": "Video", "Client": "Chevrolet", "Project": "Captiva", "Status": "Delivered", "Amount": "400.0", "PaymentStatus": "Paid", "Notes": "230"}, {"Date": "2025-11-19", "Category": "Video", "Client": "Bahrain Tourisim", "Project": "Reel + Stories", "Status": "Delivered", "Amount": "800.0", "PaymentStatus": "Paid", "Notes": "231"}, {"Date": "2025-12-05", "Category": "Video", "Client": "Cherry", "Project": "360 Mall Reel", "Status": "Delivered", "Amount": "200.0", "PaymentStatus": "Paid", "Notes": "232"}, {"Date": "2025-12-29", "Category": "Video", "Client": "Cherry", "Project": "Marid + Autoshow coverage", "Status": "Delivered", "Amount": "400.0", "PaymentStatus": "Paid", "Notes": "233"}, {"Date": "2026-01-07", "Category": "Video", "Client": "Mafia", "Project": "Video Apperance", "Status": "Delivered", "Amount": "400.0", "PaymentStatus": "Paid", "Notes": "234"}, {"Date": "2026-01-08", "Category": "Video", "Client": "Ford", "Project": "Video Apperance", "Status": "Delivered", "Amount": "500.0", "PaymentStatus": "Paid", "Notes": "235"}, {"Date": "2026-01-20", "Category": "Video", "Client": "ICaur", "Project": "Reel", "Status": "Delivered", "Amount": "400.0", "PaymentStatus": "Paid", "Notes": "236"}, {"Date": "2026-02-18", "Category": "Video", "Client": "Melenzani", "Project": "Cake Salasa", "Status": "", "Amount": "450", "PaymentStatus": "Paid", "Notes": "237"}, {"Date": "2025-09-30", "Category": "Rent", "Client": "Sarajevo Resort", "Project": "Property Rental", "Status": "Pending", "Amount": "7700", "PaymentStatus": "Not Paid", "Notes": "238"}, {"Date": "2026-03-16", "Category": "Ad", "Client": "Baba Kanafa", "Project": "Ad Campaign", "Status": "Delivered", "Amount": "500.0", "PaymentStatus": "Paid", "Notes": "239"}, {"Date": "2026-03-16", "Category": "Ad", "Client": "3aseer Time", "Project": "Ad Campaign", "Status": "Delivered", "Amount": "500.0", "PaymentStatus": "Paid", "Notes": "240"}, {"Date": "2026-03-16", "Category": "Ad", "Client": "Farrouj", "Project": "Ad Campaign", "Status": "Delivered", "Amount": "500.0", "PaymentStatus": "Paid", "Notes": "241"}, {"Date": "2026-03-16", "Category": "Ad", "Client": "Burgan Bank", "Project": "Ad Campaign", "Status": "Delivered", "Amount": "200.0", "PaymentStatus": "Not Paid", "Notes": "242"}, {"Date": "2026-03-16", "Category": "Acting", "Client": "Jibla Clinic", "Project": "Acting Role", "Status": "Delivered", "Amount": "500.0", "PaymentStatus": "Paid", "Notes": "243"}, {"Date": "2026-03-16", "Category": "Ad", "Client": "Floward", "Project": "Ad Campaign", "Status": "Delivered", "Amount": "50.0", "PaymentStatus": "Not Paid", "Notes": "244"}, {"Date": "2026-03-19", "Category": "Video", "Client": "Zain - Almethin", "Project": "\u0645\u0642\u0627\u0631\u0646\u0647 \u0628\u064a\u0646 \u0627\u0644\u0627\u0646\u062a\u0631\u0646\u062a \u0627\u0644\u0642\u0645\u0631 \u0627\u0644\u0635\u0646\u0627\u0639\u064a \u0648\u0627\u0644\u0631\u0627\u0648\u062a\u0631", "Status": "Delivered", "Amount": "400", "PaymentStatus": "Paid", "Notes": "245"}, {"Date": "2026-02-16", "Category": "Video", "Client": "iCaur - Shaleh", "Project": "\u062a\u063a\u0637\u064a\u0629 \u0644\u0641\u0639\u0627\u0644\u064a\u0629 \u0634\u0627\u0644\u064a\u0647 \u0627\u0644\u0645\u0630\u0646", "Status": "Delivered", "Amount": "400", "PaymentStatus": "Not Paid", "Notes": "246"}];
+        
+        function openModal(mode, serial = null) {
+            const modal = document.getElementById('modal');
+            const title = document.getElementById('modalTitle');
+            const form = document.getElementById('projectForm');
+            form.reset();
+            document.getElementById('fDate').value = new Date().toISOString().split('T')[0];
+
+            if (mode === 'edit') {
+                title.innerText = 'تعديل مشروع رقم ' + serial;
+                const entry = rawData.find(e => e.Notes === serial);
+                if (entry) {
+                    document.getElementById('editSerial').value = serial;
+                    document.getElementById('fDate').value = entry.Date;
+                    document.getElementById('fClient').value = entry.Client;
+                    document.getElementById('fProject').value = entry.Project;
+                    document.getElementById('fAmount').value = parseFloat(entry.Amount.replace(',',''));
+                    document.getElementById('fPaymentStatus').value = entry.PaymentStatus;
+                }
+            } else {
+                title.innerText = 'إضافة مشروع جديد';
+                document.getElementById('editSerial').value = '';
+            }
+            
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+        }
+
+        document.getElementById('projectForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const serial = document.getElementById('editSerial').value;
+            const endpoint = serial ? '/edit' : '/add';
+            
+            const payload = {
+                date: document.getElementById('fDate').value,
+                client: document.getElementById('fClient').value,
+                project: document.getElementById('fProject').value,
+                amount: document.getElementById('fAmount').value,
+                payment_status: document.getElementById('fPaymentStatus').value,
+                notes: serial
+            };
+
+            const res = await fetch(endpoint, {
+                method: 'POST',
+                body: JSON.stringify(payload)
+            });
+            
+            if (res.ok) {
+                location.reload();
+            }
+        };
+
+        function renderTable(filterData) {
+            const tbody = document.getElementById('ledgerBody');
+            tbody.innerHTML = '';
+            document.getElementById('resultCount').innerText = filterData.length;
+
+            filterData.forEach(e => {
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-slate-50 hover:bg-blue-50/30 transition-colors group';
+                
+                const isNotPaid = e.PaymentStatus === 'Not Paid';
+                const statusClass = isNotPaid ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600';
+                const statusText = isNotPaid ? 'معلق' : 'مدفوع';
+
+                tr.innerHTML = `
+                    <td class="p-4 font-mono text-blue-600 font-bold">${e.Notes}</td>
+                    <td class="p-4 text-slate-500">${e.Date}</td>
+                    <td class="p-4 font-bold text-slate-800">${e.Client}</td>
+                    <td class="p-4 text-xs max-w-[200px] truncate">${e.Project}</td>
+                    <td class="p-4 font-bold">${parseFloat(e.Amount.replace(',','')).toLocaleString()} د.ك</td>
+                    <td class="p-4">
+                        <span class="px-2 py-1 rounded-full text-[10px] font-bold uppercase ${statusClass}">
+                            ${statusText}
+                        </span>
+                    </td>
+                    <td class="p-4">
+                        <div class="flex items-center gap-2">
+                            <button onclick="openModal('edit', '${e.Notes}')" class="opacity-0 group-hover:opacity-100 bg-slate-100 hover:bg-slate-200 text-slate-600 p-2 rounded-lg transition-all" title="تعديل">
+                                ✏️
+                            </button>
+                            <a href="/invoice?serial=${e.Notes}" target="_blank" class="opacity-0 group-hover:opacity-100 bg-blue-50 hover:bg-blue-100 text-blue-600 p-2 rounded-lg transition-all" title="عرض الفاتورة">
+                                📄
+                            </a>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function applyFilters() {
+            const search = document.getElementById('searchClient').value.toLowerCase();
+            const status = document.getElementById('filterStatus').value;
+            const from = document.getElementById('dateFrom').value;
+            const to = document.getElementById('dateTo').value;
+
+            const filtered = rawData.filter(e => {
+                const matchesSearch = e.Client.toLowerCase().includes(search) || e.Project.toLowerCase().includes(search) || e.Notes.includes(search);
+                const matchesStatus = status === 'all' || (status === 'Paid' && e.PaymentStatus !== 'Not Paid') || (status === 'Not Paid' && e.PaymentStatus === 'Not Paid');
+                
+                let matchesDate = true;
+                if (from || to) {
+                    const eDate = new Date(e.Date);
+                    if (from && eDate < new Date(from)) matchesDate = false;
+                    if (to && eDate > new Date(to)) matchesDate = false;
+                }
+
+                return matchesSearch && matchesStatus && matchesDate;
+            });
+
+            renderTable(filtered.reverse());
+        }
+
+        // Listeners
+        document.getElementById('searchClient').addEventListener('input', applyFilters);
+        document.getElementById('filterStatus').addEventListener('change', applyFilters);
+        document.getElementById('dateFrom').addEventListener('change', applyFilters);
+        document.getElementById('dateTo').addEventListener('change', applyFilters);
+
+        // Init Chart
+        const ctx = document.getElementById('growthChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ["2023-08", "2023-09", "2023-10", "2023-12", "2024-02", "2024-03", "2024-04", "2024-05", "2024-06", "2024-07", "2024-08", "2024-09", "2024-10", "2024-11", "2025-06", "2025-07", "2025-08", "2025-09", "2025-10", "2025-11", "2025-12", "2026-01", "2026-02", "2026-03"],
+                datasets: [{
+                    label: 'الإيرادات الشهرية (د.ك)',
+                    data: [2810.0, 2650.0, 3500.0, 200.0, 450.0, 3000.0, 1250.0, 400.0, 1900.0, 300.0, 1000.0, 1500.0, 400.0, 660.0, 1000.0, 3150.0, 800.0, 8100.0, 4650.0, 800.0, 1000.0, 1300.0, 850.0, 2650.0],
+                    borderColor: '#2563eb',
+                    backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#2563eb'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                    x: { grid: { display: false } }
+                },
+                plugins: { legend: { display: false } }
+            }
+        });
+
+        // Initial render
+        renderTable([...rawData].reverse());
+    </script>
+</body>
+</html>
+    
