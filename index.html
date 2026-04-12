@@ -177,7 +177,7 @@
                     <td class="p-4 text-slate-500">${e.Project}</td>
                     <td class="p-4 font-black">${e.Amount} د.ك</td>
                     <td class="p-4"><span class="px-2 py-1 rounded text-xs font-bold ${statusColor}">${e.PaymentStatus === 'Paid' ? 'مدفوع' : 'معلق'}</span></td>
-                    <td class="p-4"><a href="/api/invoice?serial=${e.Notes}" onclick="event.stopPropagation()" target="_blank" class="text-blue-600 hover:underline">الفاتورة</a></td>
+                    <td class="p-4"><a href="/api?serial=?serial=${e.Notes}" onclick="event.stopPropagation()" target="_blank" class="text-blue-600 hover:underline">الفاتورة</a></td>
                 `;
                 body.appendChild(row);
             });
