@@ -99,9 +99,9 @@
                 `;
                 body.appendChild(row);
             });
-            document.getElementById('total').innerText = t.toLocaleString() + ' د.ك';
-            document.getElementById('y2026').innerText = y.toLocaleString() + ' د.ك';
-            document.getElementById('pending').innerText = p.toLocaleString() + ' د.ك';
+            document.getElementById('total').innerText = Number(t).toLocaleString() + ' د.ك';
+            document.getElementById('y2026').innerText = Number(y).toLocaleString() + ' د.ك';
+            document.getElementById('pending').innerText = Number(p).toLocaleString() + ' د.ك';
         }
 
         function openAdd() { 
