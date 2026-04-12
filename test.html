@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>Test Page</title>
+</head>
+<body style="padding: 50px; text-align: center; font-family: sans-serif;">
+    <h2>صفحة اختبار الحفظ</h2>
+    <button onclick="testSave()" style="padding: 20px; font-size: 20px; cursor: pointer;">إضافة فاتورة تجريبية</button>
+    <p id="status"></p>
+
+    <script>
+        async function testSave() {
+            const status = document.getElementById('status');
+            status.innerText = "جاري الإرسال...";
+            try {
+                const res = await fetch('/api/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        date: '2026-04-12',
+                        client: 'Test Client',
+                        project: 'Test Project',
+                        amount: '10',
+                        payment_status: 'Not Paid'
+                    })
+                });
+                
+                if (res.ok) {
+                    alert("نجح الاتصال بالسيرفر! الرد: " + res.status);
+                    status.innerText = "تم بنجاح";
+                } else {
+                    alert("فشل السيرفر في المعالجة. كود الخطأ: " + res.status);
+                    status.innerText = "خطأ من السيرفر";
+                }
+            } catch (err) {
+                alert("فشل الاتصال تماماً: " + err.message);
+                status.innerText = "خطأ في الشبكة";
+            }
+        }
+    </script>
+</body>
+</html>
