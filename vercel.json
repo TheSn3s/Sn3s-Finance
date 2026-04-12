@@ -1,5 +1,1 @@
-{
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/atef_finance.html" }
-  ]
-}
+{ "rewrites": [ { "source": "/(.*)", "destination": "/index.html" } ] }
