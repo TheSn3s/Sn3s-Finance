@@ -43,7 +43,7 @@
         <div class="bg-white p-8 rounded-2xl w-full max-w-md">
             <h2 class="text-xl font-bold mb-4">إضافة مشروع جديد</h2>
             <form id="f" class="space-y-4">
-                <input type="date" id="d" required class="w-full p-2 border rounded">
+                <input type="hidden" id="editId"><input type="date" id="d" required class="w-full p-2 border rounded">
                 <input type="text" id="c" required placeholder="العميل" class="w-full p-2 border rounded">
                 <input type="text" id="p" required placeholder="المشروع" class="w-full p-2 border rounded">
                 <input type="number" id="a" required placeholder="المبلغ" class="w-full p-2 border rounded">
@@ -52,7 +52,7 @@
                     <option value="Not Paid">معلق</option>
                 </select>
                 <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded font-bold">حفظ</button>
-                <button type="button" onclick="closeModal()" class="w-full mt-2">إلغاء</button>
+                <button type="button" id="delBtn" onclick="deleteItem()" class="bg-red-50 text-red-600 py-2 rounded font-bold hidden">حذف</button><button type="button" onclick="closeModal()" class="w-full mt-2">إلغاء</button>
             </form>
         </div>
     </div>
@@ -62,6 +62,7 @@
         const local = JSON.parse(localStorage.getItem('invoices') || '[]');
         const all = [...data, ...local].reverse();
 
+        function openAdd() { document.getElementById('modalTitle').innerText = 'إضافة مشروع جديد'; document.getElementById('f').reset(); document.getElementById('modal').classList.remove('hidden'); document.getElementById('d').value = new Date().toISOString().split('T')[0]; document.getElementById('delBtn').classList.add('hidden'); }
         function render() {
             const body = document.getElementById('tableBody');
             let t=0, y=0, p=0;
@@ -97,9 +98,9 @@
                 Project: document.getElementById('p').value,
                 Amount: document.getElementById('a').value,
                 PaymentStatus: document.getElementById('s').value,
-                Notes: (all.length + 1).toString()
+                Notes: document.getElementById('editId').value || (all.length + 1).toString()
             };
-            local.push(n);
+            if(document.getElementById('editId').value) { local = local.filter(i => i.Notes !== document.getElementById('editId').value); } local.push(n);
             localStorage.setItem('invoices', JSON.stringify(local));
             location.reload();
         }
