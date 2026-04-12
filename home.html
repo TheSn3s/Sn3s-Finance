@@ -156,9 +156,100 @@
         }
 
         function view(id) {
-            const item = all.find(i => i.Notes === id);
+            const d = all.find(i => i.Notes === id);
+            if(!d) return;
             const win = window.open('', '_blank');
-            win.document.write('<html><body style="padding:50px; font-family:sans-serif;"><h1>Invoice #'+id+'</h1><hr><h3>Client: '+item.Client+'</h3><h3>Project: '+item.Project+'</h3><h2>Total: KWD '+item.Amount+'</h2><button onclick="window.print()">Save as PDF</button></body></html>');
+            win.document.write(`
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Invoice #${id}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Montserrat', sans-serif; background-color: #f9fafb; }
+        @media print { .no-print { display: none; } body { background-color: white !important; } }
+    </style>
+</head>
+<body class="p-4 md:p-8 flex justify-center">
+    <div class="w-full max-w-[800px] bg-white shadow-2xl border border-slate-100 flex flex-col min-h-[1050px]">
+        <!-- Red Header -->
+        <div class="bg-[#f04444] py-8 text-center text-white mb-12">
+            <h1 class="text-3xl font-black uppercase tracking-widest">Abdullah AlSanousi</h1>
+            <p class="text-[10px] font-bold uppercase tracking-[0.3em] opacity-90 mt-1">Motion Graphics Artist - Content Creator</p>
+        </div>
+
+        <div class="px-12 flex-grow">
+            <!-- Top Info -->
+            <div class="flex justify-between border-b-2 border-[#f04444] pb-2 mb-10 font-bold text-[11px] uppercase text-slate-800">
+                <div>${d.Date}</div>
+                <div>Invoice #${id}</div>
+                <div>${d.Client}</div>
+            </div>
+
+            <h2 class="text-[#f04444] text-xl font-black mb-2">Invoice #${id}</h2>
+            <div class="mb-10 font-bold text-sm text-slate-800">${d.Client}</div>
+
+            <!-- Table -->
+            <table class="w-full text-left mb-10">
+                <thead>
+                    <tr class="border-b-2 border-[#f04444] text-[10px] font-black uppercase tracking-widest text-slate-700">
+                        <th class="py-2 w-12">ID</th>
+                        <th class="py-2">DESCRIPTION</th>
+                        <th class="py-2 text-right">COST</th>
+                    </tr>
+                </thead>
+                <tbody class="text-xs">
+                    <tr class="border-b border-slate-50">
+                        <td class="py-8 text-slate-400 font-mono">01</td>
+                        <td class="py-8">
+                            <p class="font-bold text-sm mb-1 text-slate-800">${d.Project}</p>
+                            <p class="text-slate-500 text-[10px]">Professional Video Production & Motion Graphics Services</p>
+                        </td>
+                        <td class="py-8 text-right font-black text-sm text-slate-800">KWD ${parseFloat(d.Amount).toLocaleString()}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Totals -->
+            <div class="flex justify-end mb-16">
+                <div class="w-48 text-[11px] font-bold space-y-2">
+                    <div class="flex justify-between text-slate-500"><span>Subtotal</span><span>KWD ${parseFloat(d.Amount).toLocaleString()}</span></div>
+                    <div class="flex justify-between border-t-2 border-black pt-2 text-sm font-black text-slate-800">
+                        <span>Total Due</span><span>KWD ${parseFloat(d.Amount).toLocaleString()}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Banking -->
+            <div class="bg-slate-50 p-5 rounded-xl border border-slate-100 text-[10px] text-slate-600 mb-12">
+                <p class="font-black text-slate-900 mb-2 uppercase tracking-wider">Banking Details:</p>
+                <p><span class="font-bold">Bank:</span> National Bank of Kuwait (NBK)</p>
+                <p><span class="font-bold">Account Name:</span> Abdullah Faisal Alsanousi</p>
+                <p><span class="font-bold">IBAN:</span> KW28NBOK00000000002006532736</p>
+            </div>
+
+            <!-- Regards -->
+            <div class="text-xs">
+                <p class="text-slate-500 font-bold mb-1">Regards,</p>
+                <p class="font-black text-sm text-slate-800">Abdullah AlSanousi</p>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="px-12 py-8 flex justify-between text-[#f04444] font-black text-[9px] uppercase tracking-[0.2em] border-t border-slate-50">
+            <div>+965 97116661</div>
+            <div>Hello@Sn3s.com</div>
+            <div>www.Sn3s.com</div>
+        </div>
+
+        <!-- Print Btn -->
+        <div class="fixed bottom-8 right-8 no-print">
+            <button onclick="window.print()" class="bg-[#f04444] text-white px-8 py-4 rounded-full font-black shadow-2xl hover:scale-105 transition-all">🖨️ PRINT / SAVE AS PDF</button>
+        </div>
+    </div>
+</body>
+</html>` );
             win.document.close();
         }
 
