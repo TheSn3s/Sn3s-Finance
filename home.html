@@ -15,14 +15,23 @@
         </header>
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 text-center">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border"><div class="text-slate-400 text-sm mb-1">إجمالي المداخيل</div><div id="total" class="text-2xl font-black text-slate-800">0 د.ك</div></div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border text-blue-600"><div class="text-slate-400 text-sm mb-1">دخل 2026</div><div id="y2026" class="text-2xl font-black">0 د.ك</div></div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border text-red-600"><div class="text-slate-400 text-sm mb-1">مبالغ معلقة</div><div id="pending" class="text-2xl font-black">0 د.ك</div></div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border">
+                <div class="text-slate-400 text-sm mb-1">إجمالي المداخيل</div>
+                <div id="total" class="text-2xl font-black text-slate-800">0 د.ك</div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border text-blue-600">
+                <div class="text-slate-400 text-sm mb-1">دخل 2026</div>
+                <div id="y2026" class="text-2xl font-black">0 د.ك</div>
+            </div>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border text-red-600">
+                <div class="text-slate-400 text-sm mb-1">مبالغ معلقة</div>
+                <div id="pending" class="text-2xl font-black">0 د.ك</div>
+            </div>
         </div>
 
         <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
             <table class="w-full text-right border-collapse">
-                <thead class="bg-slate-50 border-b text-slate-500 text-xs uppercase font-bold">
+                <thead class="bg-slate-50 border-b text-slate-500 text-xs font-bold uppercase">
                     <tr><th class="p-4 text-center">#</th><th class="p-4">التاريخ</th><th class="p-4">العميل</th><th class="p-4">المشروع</th><th class="p-4">المبلغ</th><th class="p-4 text-center">الحالة</th><th class="p-4 text-center">إجراءات</th></tr>
                 </thead>
                 <tbody id="tableBody" class="text-sm"></tbody>
@@ -30,16 +39,17 @@
         </div>
     </div>
 
+    <!-- Modal -->
     <div id="modal" class="fixed inset-0 bg-black/50 hidden flex items-center justify-center p-4 z-50">
         <div class="bg-white p-8 rounded-2xl w-full max-w-md shadow-2xl">
-            <h2 id="modalTitle" class="text-xl font-bold mb-6">إضافة مشروع</h2>
+            <h2 id="modalTitle" class="text-xl font-bold mb-6">المشروع</h2>
             <form id="f" class="space-y-4">
                 <input type="hidden" id="editId">
-                <input type="date" id="d" required class="w-full p-3 bg-slate-50 rounded-xl">
-                <input type="text" id="c" required placeholder="العميل" class="w-full p-3 bg-slate-50 rounded-xl">
-                <input type="text" id="p" required placeholder="المشروع" class="w-full p-3 bg-slate-50 rounded-xl">
-                <input type="number" id="a" required placeholder="المبلغ" class="w-full p-3 bg-slate-50 rounded-xl">
-                <select id="s" class="w-full p-3 bg-slate-50 rounded-xl"><option value="Paid">مدفوع</option><option value="Not Paid">معلق</option></select>
+                <input type="date" id="fDate" required class="w-full p-3 bg-slate-50 rounded-xl">
+                <input type="text" id="fClient" required placeholder="العميل" class="w-full p-3 bg-slate-50 rounded-xl">
+                <input type="text" id="fProject" required placeholder="المشروع" class="w-full p-3 bg-slate-50 rounded-xl">
+                <input type="number" id="fAmount" required placeholder="المبلغ" class="w-full p-3 bg-slate-50 rounded-xl">
+                <select id="fStatus" class="w-full p-3 bg-slate-50 rounded-xl"><option value="Paid">مدفوع</option><option value="Not Paid">معلق</option></select>
                 <div class="flex gap-2 pt-4">
                     <button type="submit" class="flex-grow bg-blue-600 text-white py-3 rounded-xl font-bold">حفظ</button>
                     <button type="button" id="delBtn" onclick="deleteItem()" class="bg-red-50 text-red-600 py-3 px-6 rounded-xl hidden font-bold">حذف</button>
@@ -51,18 +61,23 @@
 
     <script src="data.js"></script>
     <script>
-        let all = [];
         function render() {
             const body = document.getElementById('tableBody');
             body.innerHTML = '';
             const local = JSON.parse(localStorage.getItem('invoices') || '[]');
-            all = [...rawData, ...local];
+            const all = [...rawData, ...local];
             let t=0, y=0, p=0;
+            
             all.slice().reverse().forEach(i => {
                 const amt = parseFloat(i.Amount) || 0;
                 const status = (i.PaymentStatus || "").toString().trim();
                 const isPaid = !(status === "Not Paid" || status === "معلق" || status === "pending");
-                if(isPaid) { t += amt; if(i.Date && i.Date.includes('2026')) y += amt; } else { p += amt; }
+                
+                if(isPaid) { 
+                    t += amt; 
+                    if(i.Date && i.Date.includes('2026')) y += amt; 
+                } else { p += amt; }
+
                 const row = `
                     <tr class="border-b border-slate-50 hover:bg-white/50">
                         <td class="p-4 text-slate-400 font-mono text-[10px] text-center">${i.Notes}</td>
@@ -72,8 +87,8 @@
                         <td class="p-4 font-black text-slate-800">${amt.toLocaleString()} د.ك</td>
                         <td class="p-4 text-center"><span class="px-3 py-1 rounded-full text-[10px] font-bold ${isPaid?'bg-green-100 text-green-700':'bg-red-100 text-red-700'}">${isPaid?'مدفوع':'معلق'}</span></td>
                         <td class="p-4 flex justify-center gap-3">
-                            <button onclick="view('${i.Notes}')" title="فاتورة" class="text-xl">📄</button>
-                            <button onclick="openEdit('${i.Notes}')" title="تعديل" class="text-xl">✏️</button>
+                            <button onclick="view('${i.Notes}')" class="text-xl">📄</button>
+                            <button onclick="openEdit('${i.Notes}')" class="text-xl">✏️</button>
                         </td>
                     </tr>`;
                 body.innerHTML += row;
@@ -82,52 +97,68 @@
             document.getElementById('y2026').innerText = y.toLocaleString() + ' د.ك';
             document.getElementById('pending').innerText = p.toLocaleString() + ' د.ك';
         }
+
         function openAdd() { 
             document.getElementById('modalTitle').innerText = 'إضافة مشروع جديد';
             document.getElementById('f').reset(); document.getElementById('editId').value = '';
             document.getElementById('delBtn').classList.add('hidden');
             document.getElementById('modal').classList.remove('hidden');
-            document.getElementById('d').value = new Date().toISOString().split('T')[0];
+            document.getElementById('fDate').value = new Date().toISOString().split('T')[0];
         }
+
         function openEdit(notes) {
-            const item = all.find(i => i.Notes === notes); if(!item) return;
+            const local = JSON.parse(localStorage.getItem('invoices') || '[]');
+            const all = [...rawData, ...local];
+            const item = all.find(i => i.Notes === notes);
+            if(!item) return;
             document.getElementById('modalTitle').innerText = 'تعديل فاتورة';
             document.getElementById('editId').value = item.Notes;
-            document.getElementById('d').value = item.Date;
-            document.getElementById('c').value = item.Client;
-            document.getElementById('p').value = item.Project;
-            document.getElementById('a').value = item.Amount;
+            document.getElementById('fDate').value = item.Date;
+            document.getElementById('fClient').value = item.Client;
+            document.getElementById('fProject').value = item.Project;
+            document.getElementById('fAmount').value = item.Amount;
             const status = (item.PaymentStatus || "").toString().trim();
-            document.getElementById('s').value = (status === "Not Paid" || status === "معلق") ? "Not Paid" : "Paid";
+            document.getElementById('fStatus').value = (status === "Not Paid" || status === "معلق") ? "Not Paid" : "Paid";
             document.getElementById('delBtn').classList.remove('hidden');
             document.getElementById('modal').classList.remove('hidden');
         }
+
         function closeModal() { document.getElementById('modal').classList.add('hidden'); }
+
         document.getElementById('f').onsubmit = (e) => {
             e.preventDefault();
             const id = document.getElementById('editId').value;
-            const entry = {
-                Date: document.getElementById('d').value, Client: document.getElementById('c').value,
-                Project: document.getElementById('p').value, Amount: document.getElementById('a').value,
-                PaymentStatus: document.getElementById('s').value, Notes: id || (all.length + 1).toString().padStart(3, '0')
+            const localData = JSON.parse(localStorage.getItem('invoices') || '[]');
+            const raw = [...rawData, ...localData];
+            const n = {
+                Date: document.getElementById('fDate').value, Client: document.getElementById('fClient').value,
+                Project: document.getElementById('fProject').value, Amount: document.getElementById('fAmount').value,
+                PaymentStatus: document.getElementById('fStatus').value, Notes: id || (raw.length + 1).toString().padStart(3, '0')
             };
-            let local = JSON.parse(localStorage.getItem('invoices') || '[]');
-            if(id) local = local.filter(i => i.Notes !== id);
-            local.push(entry); localStorage.setItem('invoices', JSON.stringify(local));
+            let updatedLocal = localData;
+            if(id) updatedLocal = updatedLocal.filter(i => i.Notes !== id);
+            updatedLocal.push(n);
+            localStorage.setItem('invoices', JSON.stringify(updatedLocal));
             location.reload();
         }
+
         function deleteItem() {
             const id = document.getElementById('editId').value;
-            if(confirm('حذف الفاتورة رقم ' + id + '؟')) {
+            if(confirm('هل تريد حذف هذه الفاتورة؟')) {
                 let local = JSON.parse(localStorage.getItem('invoices') || '[]');
                 local = local.filter(i => i.Notes !== id);
-                localStorage.setItem('invoices', JSON.stringify(local)); location.reload();
+                localStorage.setItem('invoices', JSON.stringify(local)); 
+                location.reload();
             }
         }
+
         function view(id) {
-            const d = all.find(i => i.Notes === id); if(!d) return;
+            const local = JSON.parse(localStorage.getItem('invoices') || '[]');
+            const all = [...rawData, ...local];
+            const d = all.find(i => i.Notes === id);
+            if(!d) return;
             const win = window.open('', '_blank');
-            win.document.write(`<html><head><title>Invoice #\${id}</title><script src="https://cdn.tailwindcss.com"></script><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet"><style>body { font-family: 'Montserrat', sans-serif; background: #f9fafb; } @media print { .no-print { display: none; } }</style></head><body class="p-8 flex justify-center"><div class="w-full max-w-[800px] bg-white shadow-2xl border flex flex-col min-h-[1000px]"><div class="bg-[#f04444] py-10 text-center text-white mb-12"><h1 class="text-3xl font-black uppercase">Abdullah AlSanousi</h1><p class="text-[10px] font-bold uppercase mt-1">Motion Graphics Artist - Content Creator</p></div><div class="px-12 flex-grow"><div class="flex justify-between border-b-2 border-[#f04444] pb-2 mb-10 font-bold text-[11px] uppercase"><div>\${d.Date}</div><div>Invoice #\${id}</div><div>\${d.Client}</div></div><h2 class="text-[#f04444] text-xl font-black mb-10 uppercase">Invoice Details</h2><table class="w-full mb-10 text-left"><thead><tr class="text-[10px] font-black uppercase border-b-2 border-slate-100"><th class="py-4">Description</th><th class="py-4 text-right">Amount</th></tr></thead><tbody><tr><td class="py-8 font-bold">\${d.Project}</td><td class="py-8 text-right font-black text-xl">KWD \${parseFloat(d.Amount).toLocaleString()}</td></tr></tbody></table><div class="flex justify-end mb-20"><div class="w-48 border-t-2 border-black pt-4 flex justify-between font-black"><span>Total Due</span><span>KWD \${parseFloat(d.Amount).toLocaleString()}</span></div></div><div class="bg-slate-50 p-6 rounded-xl text-[10px] text-slate-500 font-bold"><p class="text-slate-900 mb-2 font-black uppercase">BANKING DETAILS:</p><p>Bank: NBK | Account: Abdullah Faisal Alsanousi | IBAN: KW28NBOK00000000002006532736</p></div></div><div class="p-12 text-center no-print"><button onclick="window.print()" class="bg-[#f04444] text-white px-10 py-4 rounded-full font-black shadow-lg">PRINT / SAVE AS PDF</button></div></div></body></html>`);
+            win.document.write("<html><head><title>Invoice #"+id+"</title><script src='https://cdn.tailwindcss.com'></script></head><body class='p-8 flex justify-center bg-slate-100'><div class='w-full max-w-[800px] bg-white shadow-2xl flex flex-col min-h-[1000px]'><div class='bg-[#f04444] py-10 text-center text-white mb-12'><h1 class='text-3xl font-black uppercase'>Abdullah AlSanousi</h1><p class='text-xs mt-1 uppercase opacity-80'>Motion Graphics & Content Creation</p></div><div class='px-12 flex-grow'><div class='flex justify-between border-b-2 border-[#f04444] pb-2 mb-10 font-bold text-[11px] uppercase'><div>"+d.Date+"</div><div>Invoice #"+id+"</div><div>"+d.Client+"</div></div><h2 class='text-[#f04444] text-xl font-black mb-10 uppercase italic'>Invoice Details</h2><table class='w-full text-left mb-10 border-b-2 border-slate-100'><thead><tr class='text-[10px] font-black uppercase text-slate-400'><th>Description</th><th class='text-right'>Amount</th></tr></thead><tbody><tr><td class='py-8 font-bold'>"+d.Project+"</td><td class='py-8 text-right font-black text-xl'>KWD "+parseFloat(d.Amount).toLocaleString()+"</td></tr></tbody></table><div class='flex justify-end mb-20'><div class='w-48 border-t-2 border-black pt-4 flex justify-between font-black'><span>Total Due</span><span>KWD "+parseFloat(d.Amount).toLocaleString()+"</span></div></div><div class='bg-slate-50 p-6 rounded-xl text-[10px] font-bold text-slate-500'><p class='text-slate-900 mb-1 font-black'>BANKING DETAILS:</p><p>Bank: NBK | IBAN: KW28NBOK00000000002006532736</p></div></div><div class='p-12 text-center'><button onclick='window.print()' class='bg-[#f04444] text-white px-10 py-4 rounded-full font-black shadow-lg no-print'>PRINT / SAVE AS PDF</button></div></div><style>@media print { .no-print { display: none; } }</style></body></html>");
             win.document.close();
         }
         window.onload = render;
