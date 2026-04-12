@@ -78,7 +78,7 @@
                     <td class="p-4 font-bold">${i.Client}</td>
                     <td class="p-4">${i.Project}</td>
                     <td class="p-4 font-black">${i.Amount} د.ك</td>
-                    <td class="p-4"><span class="px-2 py-1 rounded text-xs ${i.PaymentStatus==='Paid'?'bg-green-100 text-green-700':'bg-red-100 text-red-700'}">${i.PaymentStatus==='Paid'?'مدفوع':'معلق'}</span></td>
+                    <td class="p-4"><span class="px-2 py-1 rounded text-xs ${(i.PaymentStatus==='Paid'||i.PaymentStatus==='مدفوع')?'bg-green-100 text-green-700':'bg-red-100 text-red-700'}">${(i.PaymentStatus==='Paid'||i.PaymentStatus==='مدفوع')?'مدفوع':'معلق'}</span></td>
                     <td class="p-4"><button onclick="view('${i.Notes}')" class="text-blue-600">📄</button></td>
                 </tr>`;
             });
