@@ -111,6 +111,24 @@
         }
 
         window.openModal = function() { document.getElementById('modal').style.display = 'flex'; };
+        
+        document.getElementById('projectForm').onsubmit = function(e) {
+            e.preventDefault();
+            const entry = {
+                Date: document.getElementById('fDate').value,
+                Client: document.getElementById('fClient').value,
+                Project: document.getElementById('fProject').value,
+                Amount: document.getElementById('fAmount').value,
+                PaymentStatus: document.getElementById('fPaymentStatus').value,
+                Notes: 'NEW-' + Math.floor(Math.random()*1000)
+            };
+            let local = JSON.parse(localStorage.getItem('added_invoices') || '[]');
+            local.push(entry);
+            localStorage.setItem('added_invoices', JSON.stringify(local));
+            alert('تم الحفظ بنجاح!');
+            location.reload();
+        };
+
         window.closeModal = function() { document.getElementById('modal').style.display = 'none'; };
     </script>
 </body></html>
