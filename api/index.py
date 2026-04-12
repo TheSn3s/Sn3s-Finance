@@ -37,14 +37,22 @@ def add_new():
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/invoice', methods=['GET'])
+@app.route('/api/api/invoice', methods=['GET']) # احتياطي للمسارات المتداخلة
 def get_pdf():
     serial = request.args.get('serial')
-    # سيقوم هذا الجزء باسترجاع بيانات الفاتورة من Supabase وبناء الـ HTML
-    res = supabase.table('invoices').select("*").eq('Notes', serial).single().execute()
-    if not res.data:
-        return "Invoice not found", 404
-    # (هنا سأضع كود الـ HTML الخاص بالفاتورة الذي أصلحناه سابقاً)
-    return f"<h1>Invoice #{serial} for {res.data['Client']}</h1><p>Work in progress - Building template...</p>"
+    if not serial:
+        return "Serial number is required", 400
+    
+    try:
+        res = supabase.table('invoices').select("*").eq('Notes', serial).execute()
+        if not res.data:
+            return f"Invoice #{serial} not found in database", 404
+        
+        entry = res.data[0]
+        # (هنا سيتم بناء الـ HTML الخاص بالفاتورة)
+        return generate_invoice_html(entry)
+    except Exception as e:
+        return str(e), 500
 
 if __name__ == "__main__":
     app.run()
