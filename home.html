@@ -76,7 +76,7 @@
             all.slice().reverse().forEach(i => {
                 const amt = parseFloat(i.Amount) || 0;
                 const s = i.PaymentStatus;
-                const isPaid = (s === 'Paid' || s === 'مدفوع' || s === '1' || s === 'paid' || s === 'PAID' || s === 'yes' || s === 'Yes');
+                const isPaid = (s === 'Paid' || s === 'مدفوع' || s === '1' || s === 'paid' || s === 'PAID' || s === 'Delivered' || s === 'delivered' || s === 'Received');
                 if(isPaid) {
                     t += amt;
                     if(i.Date.includes('2026')) y += amt;
