@@ -194,22 +194,24 @@
             const serial = document.getElementById('editSerial').value;
             const endpoint = serial ? '/edit' : '/add';
             
-            const payload = {
-                date: document.getElementById('fDate').value,
-                client: document.getElementById('fClient').value,
-                project: document.getElementById('fProject').value,
-                amount: document.getElementById('fAmount').value,
-                payment_status: document.getElementById('fPaymentStatus').value,
-                notes: serial
-            };
-
-            const res = await fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
-            });
             
-            if (res.ok) {
-                location.reload();
+            const newEntry = {
+                Date: document.getElementById('fDate').value,
+                Client: document.getElementById('fClient').value,
+                Project: document.getElementById('fProject').value,
+                Amount: document.getElementById('fAmount').value,
+                PaymentStatus: document.getElementById('fPaymentStatus').value,
+                Notes: 'NEW-' + Math.floor(Math.random()*1000)
+            };
+            
+            let local = JSON.parse(localStorage.getItem('added_invoices') || '[]');
+            local.push(newEntry);
+            localStorage.setItem('added_invoices', JSON.stringify(local));
+            
+            alert('تم حفظ الفاتورة بنجاح!');
+            location.reload();
+            return;
+
             }
         };
 
@@ -332,7 +334,12 @@
         });
 
         // Initial render
-        renderTable([...rawData].reverse());
+        
+        // دمج البيانات التاريخية مع المضافة حديثاً
+        const localInvoices = JSON.parse(localStorage.getItem('added_invoices') || '[]');
+        const combinedData = [...rawData, ...localInvoices];
+
+        renderTable(combinedData.reverse());
     </script>
 </body>
 </html>
