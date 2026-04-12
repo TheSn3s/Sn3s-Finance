@@ -112,6 +112,17 @@
 
         window.openModal = function() { document.getElementById('modal').style.display = 'flex'; };
         
+        
+        function generateNextSerial() {
+            const local = JSON.parse(localStorage.getItem('added_invoices') || '[]');
+            const all = [...rawData, ...local];
+            const lastSerial = all.reduce((max, inv) => {
+                const s = parseInt(inv.Notes);
+                return isNaN(s) ? max : Math.max(max, s);
+            }, 0);
+            return (lastSerial + 1).toString().padStart(3, '0');
+        }
+
         document.getElementById('projectForm').onsubmit = function(e) {
             e.preventDefault();
             const entry = {
@@ -120,7 +131,7 @@
                 Project: document.getElementById('fProject').value,
                 Amount: document.getElementById('fAmount').value,
                 PaymentStatus: document.getElementById('fPaymentStatus').value,
-                Notes: 'NEW-' + Math.floor(Math.random()*1000)
+                Notes: generateNextSerial()
             };
             let local = JSON.parse(localStorage.getItem('added_invoices') || '[]');
             local.push(entry);
