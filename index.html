@@ -3,48 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sn3s Finance v1776002302</title>
+    <title>نظام السنعوسي المالي 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Tajawal', sans-serif; background-color: #f1f5f9; }</style>
+    <style>body { font-family: 'Tajawal', sans-serif; background-color: #f8fafc; }</style>
 </head>
 <body class="p-4 md:p-8">
     <div class="max-w-7xl mx-auto">
-        <header class="flex justify-between items-center mb-8">
-            <h1 class="text-3xl font-bold text-slate-800">النظام المالي</h1>
-            <button onclick="openModal('add')" class="bg-blue-600 text-white px-6 py-2 rounded-lg font-bold">➕ إضافة مشروع</button>
+        <header class="flex justify-between items-center mb-10">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-800">النظام المالي</h1>
+                <p class="text-slate-500">الإصدار المستقر 1.0</p>
+            </div>
+            <button onclick="openModal('add')" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:bg-blue-700">➕ إضافة مشروع</button>
         </header>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 text-center">
-            <div class="bg-white p-6 rounded-2xl shadow-sm border"><div class="text-slate-500 mb-1">إجمالي الدخل</div><div id="totalIncome" class="text-3xl font-black">0 د.ك</div></div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border"><div class="text-slate-500 mb-1">دخل 2026</div><div id="income2026" class="text-3xl font-black text-blue-600">0 د.ك</div></div>
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-red-100"><div class="text-slate-500 mb-1">مبالغ معلقة</div><div id="pendingAmount" class="text-3xl font-black text-red-600">0 د.ك</div></div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 text-center">
+                <div class="text-slate-400 text-sm mb-1">إجمالي المداخيل</div>
+                <div id="stat-total" class="text-3xl font-black text-slate-800">0 د.ك</div>
+            </div>
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 text-center">
+                <div class="text-slate-400 text-sm mb-1">دخل سنة 2026</div>
+                <div id="stat-2026" class="text-3xl font-black text-blue-600">0 د.ك</div>
+            </div>
+            <div class="bg-white p-6 rounded-3xl shadow-sm border border-red-50 text-center">
+                <div class="text-slate-400 text-sm mb-1">المبالغ المعلقة</div>
+                <div id="stat-pending" class="text-3xl font-black text-red-600">0 د.ك</div>
+            </div>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
-            <table class="w-full text-right border-collapse">
-                <thead class="bg-slate-50 border-b text-slate-500 text-xs font-bold uppercase">
-                    <tr><th class="p-4">#</th><th class="p-4">التاريخ</th><th class="p-4">العميل</th><th class="p-4">المشروع</th><th class="p-4">المبلغ</th><th class="p-4">الحالة</th><th class="p-4">إجراءات</th></tr>
+        <div class="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
+            <table class="w-full text-right">
+                <thead class="bg-slate-50 border-b text-slate-400 text-xs font-bold uppercase">
+                    <tr>
+                        <th class="p-5">#</th><th class="p-5">التاريخ</th><th class="p-5">العميل</th>
+                        <th class="p-5">المشروع</th><th class="p-5">المبلغ</th><th class="p-5">الحالة</th><th class="p-5">إجراء</th>
+                    </tr>
                 </thead>
-                <tbody id="ledgerBody" class="text-sm"></tbody>
+                <tbody id="ledgerBody" class="text-sm text-slate-700"></tbody>
             </table>
         </div>
     </div>
 
-    <div id="modal" class="fixed inset-0 bg-slate-900/50 hidden flex items-center justify-center p-4 z-50">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
-            <h3 id="modalTitle" class="text-xl font-bold mb-4">إضافة مشروع</h3>
+    <div id="modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8">
+            <h3 id="modalTitle" class="text-2xl font-bold mb-6">إضافة فاتورة</h3>
             <form id="projectForm" class="space-y-4">
                 <input type="hidden" id="editSerial">
-                <input type="date" id="fDate" required class="w-full p-2 border rounded">
-                <input type="text" id="fClient" required placeholder="العميل" class="w-full p-2 border rounded">
-                <input type="text" id="fProject" required placeholder="المشروع" class="w-full p-2 border rounded">
-                <input type="number" id="fAmount" required placeholder="المبلغ" class="w-full p-2 border rounded">
-                <select id="fPaymentStatus" class="w-full p-2 border rounded"><option value="Paid">مدفوع</option><option value="Not Paid">معلق</option></select>
-                <div class="flex gap-2">
-                    <button type="submit" class="flex-grow bg-blue-600 text-white py-2 rounded font-bold">حفظ</button>
-                    <button type="button" onclick="closeModal()" class="bg-slate-100 py-2 px-4 rounded">إلغاء</button>
-                    <button type="button" id="deleteBtn" onclick="deleteEntry()" class="bg-red-50 text-red-600 py-2 px-4 rounded hidden">حذف</button>
+                <input type="date" id="fDate" required class="w-full p-3 bg-slate-50 border-none rounded-xl">
+                <input type="text" id="fClient" required placeholder="العميل" class="w-full p-3 bg-slate-50 border-none rounded-xl">
+                <input type="text" id="fProject" required placeholder="المشروع" class="w-full p-3 bg-slate-50 border-none rounded-xl">
+                <input type="number" id="fAmount" required placeholder="المبلغ" class="w-full p-3 bg-slate-50 border-none rounded-xl">
+                <select id="fPaymentStatus" class="w-full p-3 bg-slate-50 border-none rounded-xl">
+                    <option value="Paid">مدفوع ✅</option>
+                    <option value="Not Paid">معلق 🚩</option>
+                </select>
+                <div class="flex gap-2 pt-4">
+                    <button type="submit" class="flex-grow bg-blue-600 text-white py-3 rounded-xl font-bold shadow-md">حفظ</button>
+                    <button type="button" onclick="closeModal()" class="bg-slate-100 py-3 px-6 rounded-xl">إلغاء</button>
+                    <button type="button" id="delBtn" onclick="deleteEntry()" class="bg-red-50 text-red-600 py-3 px-6 rounded-xl hidden">حذف</button>
                 </div>
             </form>
         </div>
@@ -52,28 +70,27 @@
 
     <script src="data.js"></script>
     <script>
-         // البيانات سيتم حقنها برمجياً
         let combinedData = [];
 
-        function loadData() {
+        function init() {
             const local = JSON.parse(localStorage.getItem('added_invoices') || '[]');
             combinedData = [...rawData, ...local];
-            calculateStats(combinedData);
+            updateStats();
             renderTable(combinedData.slice().reverse());
         }
 
-        function calculateStats(data) {
+        function updateStats() {
             let total = 0, y2026 = 0, pending = 0;
-            data.forEach(inv => {
+            combinedData.forEach(inv => {
                 const amt = parseFloat(inv.Amount) || 0;
                 if (inv.PaymentStatus === 'Paid') {
                     total += amt;
-                    if (inv.Date && inv.Date.startsWith('2026')) y2026 += amt;
+                    if (inv.Date && inv.Date.includes('2026')) y2026 += amt;
                 } else { pending += amt; }
             });
-            document.getElementById('totalIncome').innerText = total.toLocaleString() + ' د.ك';
-            document.getElementById('income2026').innerText = y2026.toLocaleString() + ' د.ك';
-            document.getElementById('pendingAmount').innerText = pending.toLocaleString() + ' د.ك';
+            document.getElementById('stat-total').innerText = total.toLocaleString() + ' د.ك';
+            document.getElementById('stat-2026').innerText = y2026.toLocaleString() + ' د.ك';
+            document.getElementById('stat-pending').innerText = pending.toLocaleString() + ' د.ك';
         }
 
         function renderTable(data) {
@@ -81,16 +98,16 @@
             body.innerHTML = '';
             data.forEach(e => {
                 const row = document.createElement('tr');
-                row.className = 'border-b hover:bg-slate-50 cursor-pointer';
+                row.className = 'border-b border-slate-50 hover:bg-slate-50 cursor-pointer transition-colors';
                 row.onclick = () => openModal('edit', e);
                 row.innerHTML = `
-                    <td class="p-4 text-slate-400">${e.Notes}</td>
-                    <td class="p-4 font-bold">${e.Date}</td>
-                    <td class="p-4">${e.Client}</td>
-                    <td class="p-4">${e.Project}</td>
-                    <td class="p-4 font-black">${e.Amount} د.ك</td>
-                    <td class="p-4"><span class="px-2 py-1 rounded text-xs ${e.PaymentStatus === 'Paid' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}">${e.PaymentStatus === 'Paid' ? 'مدفوع' : 'معلق'}</span></td>
-                    <td class="p-4"><button onclick="event.stopPropagation(); viewInvoice('${e.Notes}')" class="text-blue-600 underline">الفاتورة</button></td>
+                    <td class="p-5 text-slate-400 font-mono text-xs">${e.Notes}</td>
+                    <td class="p-5 font-bold">${e.Date}</td>
+                    <td class="p-5">${e.Client}</td>
+                    <td class="p-5 text-slate-500">${e.Project}</td>
+                    <td class="p-5 font-black">${e.Amount} د.ك</td>
+                    <td class="p-5"><span class="px-3 py-1 rounded-full text-xs font-bold ${e.PaymentStatus==='Paid'?'bg-green-100 text-green-700':'bg-red-100 text-red-700'}">${e.PaymentStatus==='Paid'?'مدفوع':'معلق'}</span></td>
+                    <td class="p-5"><button onclick="event.stopPropagation(); viewInvoice('${e.Notes}')" class="text-blue-600 hover:text-blue-800 font-bold underline">الفاتورة</button></td>
                 `;
                 body.appendChild(row);
             });
@@ -98,20 +115,22 @@
 
         window.openModal = function(mode, data = null) {
             document.getElementById('modal').classList.remove('hidden');
+            const delBtn = document.getElementById('delBtn');
             if (mode === 'edit' && data) {
-                document.getElementById('modalTitle').innerText = 'تعديل فاتورة';
+                document.getElementById('modalTitle').innerText = 'تعديل الفاتورة';
+                document.getElementById('editSerial').value = data.Notes;
                 document.getElementById('fDate').value = data.Date;
                 document.getElementById('fClient').value = data.Client;
                 document.getElementById('fProject').value = data.Project;
                 document.getElementById('fAmount').value = data.Amount;
                 document.getElementById('fPaymentStatus').value = data.PaymentStatus;
-                document.getElementById('editSerial').value = data.Notes;
-                document.getElementById('deleteBtn').classList.remove('hidden');
+                delBtn.classList.remove('hidden');
             } else {
                 document.getElementById('projectForm').reset();
+                document.getElementById('modalTitle').innerText = 'إضافة مشروع جديد';
                 document.getElementById('fDate').value = new Date().toISOString().split('T')[0];
                 document.getElementById('editSerial').value = '';
-                document.getElementById('deleteBtn').classList.add('hidden');
+                delBtn.classList.add('hidden');
             }
         };
 
@@ -127,9 +146,9 @@
                 Project: document.getElementById('fProject').value,
                 Amount: document.getElementById('fAmount').value,
                 PaymentStatus: document.getElementById('fPaymentStatus').value,
-                Notes: serial || generateNextSerial()
+                Notes: serial || generateSerial()
             };
-            if (serial) local = local.filter(inv => inv.Notes !== serial);
+            if (serial) local = local.filter(i => i.Notes !== serial);
             local.push(entry);
             localStorage.setItem('added_invoices', JSON.stringify(local));
             location.reload();
@@ -137,30 +156,27 @@
 
         function deleteEntry() {
             const serial = document.getElementById('editSerial').value;
-            if (confirm('هل أنت متأكد من الحذف؟')) {
+            if (confirm('هل تريد حذف الفاتورة رقم ' + serial + '؟')) {
                 let local = JSON.parse(localStorage.getItem('added_invoices') || '[]');
-                local = local.filter(inv => inv.Notes !== serial);
+                local = local.filter(i => i.Notes !== serial);
                 localStorage.setItem('added_invoices', JSON.stringify(local));
                 location.reload();
             }
         }
 
-        function generateNextSerial() {
-            const all = [...rawData, ...JSON.parse(localStorage.getItem('added_invoices') || '[]')];
-            const last = all.reduce((max, i) => Math.max(max, parseInt(i.Notes) || 0), 0);
+        function generateSerial() {
+            const last = combinedData.reduce((max, i) => Math.max(max, parseInt(i.Notes) || 0), 0);
             return (last + 1).toString().padStart(3, '0');
         }
 
         function viewInvoice(serial) {
-            const data = combinedData.find(i => i.Notes === serial);
-            if(!data) return;
+            const d = combinedData.find(i => i.Notes === serial);
             const win = window.open('', '_blank');
-            const html = `<html><head><title>Invoice #\${serial}</title><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-slate-100 p-8 flex justify-center"><div class="bg-white w-[800px] p-12 shadow-xl border-t-8 border-red-600"><h1 class="text-3xl font-bold mb-8 text-red-600 text-center uppercase">Invoice #\${serial}</h1><div class="flex justify-between mb-12 border-b pb-4"><div>Date: \${data.Date}</div><div>Client: \${data.Client}</div></div><table class="w-full mb-12 text-left"><thead><tr class="border-b-2 border-slate-800"><th>Project</th><th class="text-right">Total</th></tr></thead><tbody><tr class="border-b"><td class="py-4">\${data.Project}</td><td class="text-right font-bold py-4">KWD \${data.Amount}</td></tr></tbody></table><div class="text-right text-xl font-bold mb-12">Total Due: KWD \${data.Amount}</div><div class="bg-slate-50 p-4 text-[10px]">Bank: NBK | Account: Abdullah Alsanousi | IBAN: KW28NBOK00000000002006532736</div><button onclick="window.print()" class="mt-8 bg-red-600 text-white px-8 py-2 rounded-full font-bold block mx-auto">Print / Save PDF</button></div></body></html>`;
-            win.document.write(html);
+            win.document.write(`<html><head><title>Invoice #\${serial}</title><script src="https://cdn.tailwindcss.com"></script></head><body class="bg-slate-50 p-10 flex justify-center"><div class="bg-white w-[800px] p-16 shadow-2xl border-t-[12px] border-red-600"><div class="text-center mb-16"><h1 class="text-4xl font-black text-red-600 uppercase tracking-tighter italic">Abdullah AlSanousi</h1><p class="text-xs font-bold text-slate-400 mt-2 uppercase tracking-widest">Motion Graphics & Content Creation</p></div><div class="flex justify-between border-b-2 border-slate-100 pb-4 mb-10 text-sm font-bold"><div>DATE: \${d.Date}</div><div>INVOICE: #\${serial}</div><div>CLIENT: \${d.Client}</div></div><h2 class="text-2xl font-black mb-10 text-slate-800 uppercase">Invoice Details</h2><table class="w-full mb-20"><thead class="text-left text-xs font-black text-slate-400 uppercase border-b-2 border-slate-100"><tr><th class="py-4">Description</th><th class="py-4 text-right">Amount</th></tr></thead><tbody class="text-slate-700 font-bold"><tr class="border-b border-slate-50"><td class="py-8">\${d.Project}</td><td class="py-8 text-right text-xl font-black text-slate-900">KWD \${d.Amount}</td></tr></tbody></table><div class="flex justify-end mb-20"><div class="w-64 border-t-4 border-slate-900 pt-4 flex justify-between items-center"><span class="font-black text-sm uppercase">Total Amount</span><span class="font-black text-2xl">KWD \${d.Amount}</span></div></div><div class="bg-slate-50 p-6 rounded-2xl text-[10px] text-slate-500 font-bold leading-relaxed"><p class="text-slate-800 mb-2 font-black uppercase tracking-wider">Payment Information:</p><p>Bank: National Bank of Kuwait (NBK)</p><p>Account Name: Abdullah Faisal Alsanousi</p><p>IBAN: KW28NBOK00000000002006532736</p></div><div class="mt-20 text-center no-print"><button onclick="window.print()" class="bg-red-600 text-white px-10 py-4 rounded-2xl font-black shadow-xl hover:scale-105 transition-transform">PRINT INVOICE</button></div></div></body></html>`);
             win.document.close();
         }
 
-        window.onload = loadData;
+        window.onload = init;
     </script>
 </body>
 </html>
