@@ -9,7 +9,7 @@ module.exports = async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   try {
-    const { notes, date, client, project, amount, payment_status } = req.body;
+    const { notes, date, client, project, amount, payment_status, description } = req.body;
     if (!notes) return res.status(400).json({ error: "Missing serial (notes)" });
 
     const { entries, sha } = await getData();
@@ -22,6 +22,7 @@ module.exports = async function handler(req, res) {
     if (project) entries[idx].Project = project;
     if (amount !== undefined) entries[idx].Amount = String(amount);
     if (payment_status) entries[idx].PaymentStatus = payment_status;
+    if (description !== undefined) entries[idx].Description = description;
 
     await saveData(entries, sha, `✏️ Edit invoice #${notes}`);
 

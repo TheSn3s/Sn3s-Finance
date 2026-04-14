@@ -199,6 +199,10 @@
                     <label class="block text-xs font-bold text-slate-400 mb-2">المشروع</label>
                     <input type="text" id="fProject" required placeholder="وصف المشروع..." class="w-full bg-slate-800/50 border border-slate-600/30 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500/50 outline-none">
                 </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 mb-2">تفاصيل العمل (تظهر في الفاتورة)</label>
+                    <textarea id="fDescription" rows="2" placeholder="مثال: إنتاج فيديو موشن جرافيك + تصميم بوست..." class="w-full bg-slate-800/50 border border-slate-600/30 rounded-xl px-4 py-3 text-sm text-white placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500/50 outline-none resize-none"></textarea>
+                </div>
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-slate-400 mb-2">المبلغ (د.ك)</label>
@@ -306,6 +310,7 @@
                     document.getElementById('fProject').value = entry.Project;
                     document.getElementById('fAmount').value = parseFloat(String(entry.Amount).replace(/[^0-9.-]/g,''));
                     document.getElementById('fPaymentStatus').value = entry.PaymentStatus;
+                    document.getElementById('fDescription').value = entry.Description || '';
                 }
             } else {
                 document.getElementById('modalTitle').innerText = '➕ إضافة مشروع جديد';
@@ -342,6 +347,7 @@
                 project: document.getElementById('fProject').value,
                 amount: document.getElementById('fAmount').value,
                 payment_status: document.getElementById('fPaymentStatus').value,
+                description: document.getElementById('fDescription').value,
                 notes: serial || undefined
             };
             try {
@@ -460,6 +466,7 @@
             const amtRaw = String(entry.Amount).replace(/[^0-9.-]/g, '');
             let amtVal = parseFloat(amtRaw) || 0;
             const amtFmt = 'KWD ' + amtVal.toLocaleString();
+            const desc = entry.Description || 'Professional Video Production & Motion Graphics Services tailored for your brand\'s digital presence.';
 
             const invoiceHTML = `<!DOCTYPE html>
 <html lang="en">
@@ -508,7 +515,7 @@
                         <td class="py-6 align-top text-center text-slate-700">1</td>
                         <td class="py-6 pr-8">
                             <p class="font-bold text-sm mb-1 text-slate-800">${entry.Project}</p>
-                            <p class="text-slate-700 text-[10px] leading-relaxed">Professional Video Production & Motion Graphics Services tailored for your brand's digital presence.</p>
+                            <p class="text-slate-700 text-[10px] leading-relaxed">${desc}</p>
                         </td>
                         <td class="py-6 align-top text-right font-black text-sm whitespace-nowrap text-slate-800">${amtFmt}</td>
                     </tr>

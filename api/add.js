@@ -9,7 +9,7 @@ module.exports = async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
   try {
-    const { date, client, project, amount, payment_status, category } = req.body;
+    const { date, client, project, amount, payment_status, category, description } = req.body;
     const { entries, sha } = await getData();
 
     // Find next serial
@@ -28,6 +28,7 @@ module.exports = async function handler(req, res) {
       Status: "Delivered",
       Amount: String(amount || "0"),
       PaymentStatus: payment_status || "Not Paid",
+      Description: description || "",
       Notes: newSerial,
     };
 
