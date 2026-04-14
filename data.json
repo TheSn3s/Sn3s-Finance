@@ -2458,5 +2458,15 @@
     "Amount": "400",
     "PaymentStatus": "Not Paid",
     "Notes": "246"
+  },
+  {
+    "Date": "2026-04-12",
+    "Category": "Video",
+    "Client": "Chery",
+    "Project": "زهرة العرفج",
+    "Status": "Delivered",
+    "Amount": "1500",
+    "PaymentStatus": "Not Paid",
+    "Notes": "247"
   }
 ]
