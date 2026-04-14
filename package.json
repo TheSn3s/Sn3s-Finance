@@ -1,0 +1,8 @@
+{
+  "name": "sn3s-finance",
+  "version": "2.0.0",
+  "private": true,
+  "dependencies": {
+    "@octokit/rest": "^20.0.0"
+  }
+}

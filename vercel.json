@@ -1,1 +1,9 @@
-{ "rewrites": [ { "source": "/(.*)", "destination": "/index.html" } ] }
+{
+  "rewrites": [
+    { "source": "/api/data", "destination": "/api/data.js" },
+    { "source": "/api/add", "destination": "/api/add.js" },
+    { "source": "/api/edit", "destination": "/api/edit.js" },
+    { "source": "/api/delete", "destination": "/api/delete.js" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
